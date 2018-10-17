@@ -6,10 +6,10 @@ input [width-1:0] d;
 output [width-1:0] q;
 input we, clk, rst;
 
-always@(posedge CLK) begin
+always@(posedge clk) begin
 	if(rst) q = 0;
 	else if(we) q = d;
 	else q = q;
 end
 
-endmodule		
+endmodule	
