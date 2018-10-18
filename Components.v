@@ -16,10 +16,10 @@ module TriState #(parameter WIDTH = 32) (
     output wire [WIDTH-1:0] out
 );
     assign out = oe ? in : {(WIDTH){1'bz}};
-endmodule // TriBuffer
+endmodule // TriState
 
 // -----------------------------------------------------
-// 
+//                     Registers
 // -----------------------------------------------------
 
 module DRegister #(parameter WIDTH = 32) (
@@ -44,19 +44,19 @@ endmodule // DRegister
 module Adder #(parameter WIDTH = 32) (
     input  wire [WIDTH-1:0] a,
     input  wire [WIDTH-1:0] b,
-    output wire [WIDTH-1:0] y,
-    output wire             carry
+    output wire [WIDTH-1:0] y
 );
-    assign { carry, y } = a + b;
+    assign y = a + b;
 endmodule // Adder 
 
 module ALU #(parameter WIDTH = 32) (
-    input  wire [      1:0] ctrl,
+    input  wire             ctrl,
     input  wire [WIDTH-1:0] a,
     input  wire [WIDTH-1:0] b,
     output reg  [WIDTH-1:0] y
 );
-    always @(*) begin
+    initial assign y = {(WIDTH){1'b0}};
+    always @(ctrl, a, b) begin
         case (ctrl)
             2'b00: y = a + b; // add
             2'b01: y = a - b; // sub
