@@ -45,14 +45,17 @@ DRegister #( .WIDTH(1))
 	Start_reg_inst(
 		.clk(clk), .rst(rst), .en(we2), .d(InData[16]), .q(Start)
 	);
-Assign StartCmb = we2 & InData[16];
+
+assign StartCmb = we2 & InData[16];
+
 DRegister #(.WIDTH(1)) Start_reg2 (clk, rst, 1, StartCmb, RegStart);
 DRegister #(.WIDTH(1)) DelayReg (clk, rst, 1, DONE, DoneDelay);
+
 assign StartPulse = RegStart & (~DoneDelay);
 
 //*****
 
-FPMul (clk, rst, StartPulse, OpA, OpB, DONE, P, OF, UF, NANF, INFF, DNF, ZF);
+FPMul FPMul_module(clk, rst, StartPulse, OpA, OpB, DONE, P, OF, UF, NANF, INFF, DNF, ZF);
 
 DRegister #( .WIDTH(39))
 	FPM_out_reg_inst(
@@ -60,8 +63,7 @@ DRegister #( .WIDTH(39))
 .q(ResP, ResOF, ResUF, ResNANF, ResINFF, ResDNF, ResZF)
 	);
 
-rsreg
-	FPM_rsreg_inst(
+rsreg FPM_rsreg_inst(
 		.clk(clk), .set(DONE), .rst(StartCmb), .q(ResDone)
 );
 
