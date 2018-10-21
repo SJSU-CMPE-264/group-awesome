@@ -132,3 +132,53 @@ module CLA64 (
     CLA32 u0 ( .A(A[31: 0]), .B(B[31: 0]), .cin(cin),      .Y(Y[31: 0]), .cout(DONT_USE) );
     CLA32 u1 ( .A(A[63:32]), .B(B[63:32]), .cin(DONT_USE), .Y(Y[63:32]), .cout(cout)     );
 endmodule
+
+// -----------------------------------------------------
+//              FPMUL Address Decoder
+// -----------------------------------------------------
+
+module fpmul_addr_decoder(
+    input we,
+    input [1:0] address,
+    output reg we0, we1, we2,
+    output reg [1:0] RdSel
+    );
+
+always @(*) begin
+    case (address)
+        2'b00:
+            begin
+                we0 = we;
+                we1 = 1'b0;
+                we2 = 1'b0;
+            end
+        2'b01:
+            begin
+                we0 = 1'b0;
+                we1 = we;
+                we2 = 1'b0;
+            end
+        2'b10:
+            begin
+                we0 = 1'b0;
+                we1 = 1'b0;
+                we2 = we;
+            end
+        2'b11:
+            begin
+                we0 = 1'b0;
+                we1 = 1'b0;
+                we2 = 1'b0;
+            end
+        default:
+            begin
+                we0 = 1'b0;
+                we1 = 1'b0;
+                we2 = 1'b0;
+            end
+    endcase
+end
+
+assign RdSel = address;
+
+endmodule
