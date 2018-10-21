@@ -57,7 +57,7 @@ assign StartPulse = RegStart & (~DoneDelay);
 
 FPMul FPMul_module(clk, rst, StartPulse, OpA, OpB, DONE, P, OF, UF, NANF, INFF, DNF, ZF);
 
-DRegister #( .WIDTH(39))
+DRegister #( .WIDTH(38))
 	FPM_out_reg_inst(
 		.clk(clk), .rst(rst), .en(DONE), .d({P,OF,UF,NANF,INFF,DNF,ZF}),
 .q(ResP, ResOF, ResUF, ResNANF, ResINFF, ResDNF, ResZF)
