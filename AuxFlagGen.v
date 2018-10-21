@@ -8,9 +8,8 @@ module AuxFlagGen(
     input  wire [ 7:0] EB,
     input  wire [22:0] MAP,
     input  wire [23:0] MBP,
-    output wire [10:0] flags
+    output wire [11:0] flags
 );
-
     wire EAP_ZF;
     wire EAP_HF;
     wire MAP_ZF;
@@ -32,21 +31,36 @@ module AuxFlagGen(
     wire AB_ZERO;
     wire AB_DNF;
 
+    wire guard;
+    wire lsb;
     wire sticky;
     wire round;
+
     wire underflow;
     wire overflow;
 
-    assign flags = { AP_ZF, AP_DNF, AP_INFF, AP_NANF, 
-                     round, underflow, overflow, 
-                     AB_NAN, AB_INF, AB_ZERO, AB_DNF };
+    // round bit
+    assign guard  = MBP[23];
+    assign lsb    = MBP[0];
+    assign sticky = &MBP[22:0];
+    assign round  = guard & ( lsb | sticky );
+
+    assign underflow = EAP[9];
+    assign overflow  = ( ~EAP[9] & EAP[8] ) | EAP_HF;
+
+    // flag bus
+    assign flags = { AP_ZF, AP_DNF, AP_INFF, AP_NANF,    // [11:8]
+                     MAP_HF, round, underflow, overflow, // [ 7:4]
+                     AB_NAN, AB_INF, AB_ZERO, AB_DNF };  // [ 3:0]
 
     DRegister #(1) EAP_ZF_reg (.clk(clk), .rst(rst), .en(1'b1), .d(~|EAP[ 7:0]), .q(EAP_ZF));
     DRegister #(1) EAP_HF_reg (.clk(clk), .rst(rst), .en(1'b1), .d( &EAP[ 7:0]), .q(EAP_HF));
     DRegister #(1) MAP_ZF_reg (.clk(clk), .rst(rst), .en(1'b1), .d(~|MAP[22:0]), .q(MAP_ZF));
+    DRegister #(1) MAP_HF_reg (.clk(clk), .rst(rst), .en(1'b1), .d( &MAP[22:0]), .q(MAP_HF));
     DRegister #(1) EB_ZF_reg  (.clk(clk), .rst(rst), .en(1'b1), .d( ~|EB[ 7:0]), .q(EB_ZF ));
     DRegister #(1) EB_HF_reg  (.clk(clk), .rst(rst), .en(1'b1), .d(  &EB[ 7:0]), .q(EB_HF ));
     DRegister #(1) MB_ZF_reg  (.clk(clk), .rst(rst), .en(1'b1), .d(~|MBP[22:0]), .q(MBP_ZF));
+    DRegister #(1) MB_HF_reg  (.clk(clk), .rst(rst), .en(1'b1), .d( &MBP[22:0]), .q(MBP_HF));
 
     assign AP_ZF   = EAP_ZF &  MAP_ZF;
     assign AP_DNF  = EAP_ZF & ~MAP_ZF;
@@ -69,19 +83,4 @@ module AuxFlagGen(
     DRegister #(1) AB_DNF_reg  ( .clk(clk), .rst(rst), .en(1'b1),
                                  .d( AP_DNF | B_DNF ), 
                                  .q(AB_DNF) );
-    
-    DRegister #(1) sticky_reg ( .clk(clk), .rst(rst), .en(1'b1),
-                                .d( |MBP[22:0] ), 
-                                .q(sticky) );
-    DRegister #(1) round_reg  ( .clk(clk), .rst(rst), .en(1'b1), 
-                                .d( MBP[23] & (MAP[0] | sticky) ), 
-                                .q(round) );
-
-    DRegister #(1) undeflow_reg ( .clk(clk), .rst(rst), .en(1'b1),
-                                  .d(EAP[9]), 
-                                  .q(underflow) );
-    DRegister #(1) overflow_reg ( .clk(clk), .rst(rst), .en(1'b1),
-                                  .d( ~EAP[9] & (EAP[8] | EAP_ZF) ), 
-                                  .q(overflow) );
-
 endmodule
