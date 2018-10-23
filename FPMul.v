@@ -6,13 +6,57 @@
 module FPMul (
     input  wire        clk,
     input  wire        rst,
-    input  wire        start,
+    input  wire        Start,
     input  wire [31:0] A,
     input  wire [31:0] B,
-    output wire        done,
+    output wire        Done,
     output wire [31:0] P,
     output wire        OF, UF, NanF, InfF, DNF, ZF
 );
+    wire       p_rst;
+    wire [4:0] buf_en;
+    wire [8:0] r_en;
+    wire [1:0] r2_src;
+    wire [1:0] r3_src;
+    wire       shift_sel;
+    wire       f1_srcB;
+    wire       f1_ctrl;
+    wire       nan, inf, zero;
+    wire       mp23, round, mph_h, underflow, overflow;
+
+    FPMul_DP dp ( .clk(clk),
+                  .rst(rst),
+                  .A(A),
+                  .B(B),
+                  .p_rst(p_rst),
+                  .buf_en(buf_en),
+                  .r_en(r_en),
+                  .r2_src(r2_src),
+                  .r3_src(r3_src),
+                  .shift_sel(shift_sel),
+                  .f1_srcB(f1_srcB),
+                  .f1_ctrl(f1_ctrl),
+                  .nan(nan), .inf(inf), .zero(zero),
+                  .mp23(mp23), .round(round), .mph_h(mph_h), .underflow(underflow), .overflow(overflow),
+                  .P(P),
+                  .OF(OF), .UF(UF), .NanF(NanF), .InfF(InfF), .DNF(DNF), .ZF(ZF) );
+
+    FPMul_CU cu ( .clk(clk),
+                  .rst(rst),
+                  .start(Start),
+                  .nan(nan), .inf(inf), .zero(zero),
+                  .mp23(mp23), 
+                  .mph_h(mph_h), .round(round), 
+                  .underflow(underflow), .overflow(overflow),
+                  .done(Done),
+                  .p_rst(p_rst),
+                  .buf_en(buf_en),
+                  .r_en(r_en),
+                  .r2_src(r2_src),
+                  .r3_src(r3_src),
+                  .shift_sel(shift_sel),
+                  .f1_srcB(f1_srcB),
+                  .f1_ctrl(f1_ctrl) );
 endmodule
 
 // -----------------------------------------------------
