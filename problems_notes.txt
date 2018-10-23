@@ -1,0 +1,6 @@
+problems_notes
+
+
+1. did not like using names "set" and "q" in module "rsreg" of "FPWrapper.v"
+2. in "Components.v" cannot "assign" to a register. must update in "always" block
+3. had to rewrite some of the apostrophes in "FPWrapper" because somewhere they got converted into garbage characters probably sometime when converting linux-windows or vice verca.
