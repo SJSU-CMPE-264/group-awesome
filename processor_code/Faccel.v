@@ -13,7 +13,7 @@ module faccel
     register  #(1)  G  (clk, rst, we2, d[0], go);
     Factorial #(4)  F  (clk, rst, gopulse, n, done, nf);
     register  #(32) NF (clk, rst, done, nf, nfsig);
-    rsreg           S  (clk, rst, gopulse, done, status);
+    rsreg2          S  (clk, rst, gopulse, done, status);
     mux4      #(32) M  ({27'b0, n}, {30'b0, go}, {30'b0, status}, nfsig, rdsel, out);
 
 endmodule
@@ -34,7 +34,7 @@ module adecoder
 
 endmodule
 
-module rsreg
+module rsreg2
 (input clk, rst, r, s, output reg out);
 
     always @ (posedge clk, posedge rst)
