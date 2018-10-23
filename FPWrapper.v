@@ -23,7 +23,7 @@ fpmul_addr_decoder FPdec(WE, A, we0, we1, we2, out_decoder);
 Mux #( .INPUTS(4), .WIDTH(32))
 	FPWrapper_out_mux_inst(
 		.sel(out_decoder), 
-.in({{15’b0,Start,2’b0,ResOF,ResUF,ResNANF,ResINFF,ResDNF,ResZF,7’b0, ResDone}, // 11
+.in({{15'b0,Start,2'b0,ResOF,ResUF,ResNANF,ResINFF,ResDNF,ResZF,7'b0, ResDone}, // 11
 						{ResP}, // 10
 						{OpB}, // 01
 						{OpA}  // 00 
@@ -59,22 +59,25 @@ FPMul FPMul_module(clk, rst, StartPulse, OpA, OpB, DONE, P, OF, UF, NANF, INFF, 
 
 DRegister #( .WIDTH(38))
 	FPM_out_reg_inst(
-		.clk(clk), .rst(rst), .en(DONE), .d({P,OF,UF,NANF,INFF,DNF,ZF}),
-.q(ResP, ResOF, ResUF, ResNANF, ResINFF, ResDNF, ResZF)
+		.clk(clk), .rst(rst), .en(DONE), .d({P,OF,UF,NANF,INFF,DNF,ZF}), .q({ResP, ResOF, ResUF, ResNANF, ResINFF, ResDNF, ResZF})
 	);
 
 rsreg FPM_rsreg_inst(
-		.clk(clk), .set(DONE), .rst(StartCmb), .q(ResDone)
+		.clk(clk), .s(DONE), .rst(StartCmb), .out(ResDone)
 );
 
 endmodule
 
 module rsreg
-(input clk, set, rst, output reg q);
+(
+	input clk, 
+	input s, 
+	input rst, output reg out
+);
     always @ (posedge clk, posedge rst)
     begin
-        if(rst) q <=0;
-        else if(set) q <= 1;
-        else q <= q;
+        if(rst) out <=0;
+        else if(s) out <= 1;
+        else out <= out;
     end
 endmodule

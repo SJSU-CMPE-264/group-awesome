@@ -16,7 +16,7 @@
 // and the display module for prototyping)
 module mips_top(
     input    clk, reset, pb,
-    output    memwrite, wem, we1, we2,
+    output    memwrite, wem, we1, we2, we3,
     output    [ 7:0]     LEDSEL,
     output     [ 7:0]    LEDOUT,
     input    [ 7:0]    switches,
@@ -25,7 +25,7 @@ module mips_top(
     
     );
 
-    wire    [31:0]     pc, instr, dataadr, writedata, readdata, dispDat, memdata, factdata, gpiodata, gpo1, gpo2;
+    wire    [31:0]     pc, instr, dataadr, writedata, readdata, dispDat, memdata, factdata, gpiodata, FPMdata, gpo1, gpo2;
     wire     clksec, clk_db;
     wire    [1:0] rdsel;
     reg        [ 15:0]     reg_hex;
@@ -45,13 +45,14 @@ module mips_top(
     debounce db (clk_5KHz, pb, clk_db);
       
     // Instantiate processor and memories    
-    mips     mips    (clk_db, reset, pc, instr, memwrite, dataadr, writedata, readdata, switches[4:0], dispDat);
-    imem     imem    (pc[7:2], instr);
-    decoder dec     (memwrite, dataadr, wem, we1, we2, rdsel);
-    dmem    dmem    (clk_db, wem, dataadr, writedata, memdata);
-    faccel  fact    (clk_db, rst, we1, dataadr[3:2], writedata, factdata);
-    gpio    gpio    (writedata, gpi1, 32'h0, dataadr[3:2], we2, clk_db, gpiodata, gpo1, gpo2);
-    mux4 #(32) mux  (memdata, memdata, factdata, gpiodata, rdsel, readdata);
+    mips     mips       (clk_db, reset, pc, instr, memwrite, dataadr, writedata, readdata, switches[4:0], dispDat);
+    imem     imem       (pc[7:2], instr);
+    decoder dec         (memwrite, dataadr, wem, we1, we2, we3, rdsel);
+    dmem    dmem        (clk_db, wem, dataadr, writedata, memdata);
+    faccel  fact        (clk_db, reset, we1, dataadr[3:2], writedata, factdata);
+    gpio    gpio        (writedata, gpi1, 32'h0, dataadr[3:2], we2, clk_db, gpiodata, gpo1, gpo2);
+    FPWrapper FPWrapper (.clk(clk_db), .rst(reset), .A(dataadr[3:2]), .WE(we3), .InData(writedata), .OutData(FPMdata));
+    mux4 #(32) mux      (FPMdata, memdata, factdata, gpiodata, rdsel, readdata);
     
 //=======================================================================================================================
 //=======================================================================================================================
