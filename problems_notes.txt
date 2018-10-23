@@ -1,6 +1,7 @@
 problems_notes
 
 
-1. did not like using names "set" and "q" in module "rsreg" of "FPWrapper.v"
+1. [RESOLVED] did not like using names "set" and "q" in module "rsreg" of "FPWrapper.v"
+--> Turns out there was a module within my (Kevin's) 140 processor code also called "rsreg" and the RTL was using this module instead of the one in "FPWrapper.v". I changed the name of the one in the old code, but WE SHOULD BE ON THE LOOKOUT FOR THIS IN OTHER CASES.
 2. in "Components.v" cannot "assign" to a register. must update in "always" block
 3. had to rewrite some of the apostrophes in "FPWrapper" because somewhere they got converted into garbage characters probably sometime when converting linux-windows or vice verca.
