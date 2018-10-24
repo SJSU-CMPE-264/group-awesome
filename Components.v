@@ -145,6 +145,7 @@ module fpmul_addr_decoder(
     );
 
 always @(*) begin
+    RdSel = address;
     case (address)
         2'b00:
             begin
@@ -179,6 +180,6 @@ always @(*) begin
     endcase
 end
 
-assign RdSel = address;
+// assign RdSel = address;
 
 endmodule

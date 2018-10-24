@@ -11,7 +11,7 @@ input [1:0] A,
 
 wire we0, we1, we2, DONE;
 wire Start, StartCmb, StartPulse,DoneDelay, RegStart; 
-wire OF, UF, NANF, INFF, DNF, ZF, ResOF, ResUF, ResNANF, ResINFF, ResDNF, ResZF;
+wire OF, UF, NANF, INFF, DNF, ZF, ResOF, ResUF, ResNANF, ResINFF, ResDNF, ResZF, ResDone;
 wire [1:0] out_decoder;
 wire [31:0] OpA, OpB, P, ResP;
 
@@ -23,12 +23,13 @@ fpmul_addr_decoder FPdec(WE, A, we0, we1, we2, out_decoder);
 Mux #( .INPUTS(4), .WIDTH(32))
 	FPWrapper_out_mux_inst(
 		.sel(out_decoder), 
-.in({{15’b0,Start,2’b0,ResOF,ResUF,ResNANF,ResINFF,ResDNF,ResZF,7’b0, ResDone}, // 11
-						{ResP}, // 10
-						{OpB}, // 01
-						{OpA}  // 00 
-						}), 
-					.out(OutData));
+		.in({{15'b0,Start,2'b0,ResOF,ResUF,ResNANF,ResINFF,ResDNF,ResZF,7'b0, ResDone}, // 11
+				{ResP}, // 10
+				{OpB}, // 01
+				{OpA}  // 00 
+		}), 
+		.out(OutData)
+	);
 						
 
 DRegister #( .WIDTH(32))
@@ -59,8 +60,7 @@ FPMul FPMul_module(clk, rst, StartPulse, OpA, OpB, DONE, P, OF, UF, NANF, INFF, 
 
 DRegister #( .WIDTH(38))
 	FPM_out_reg_inst(
-		.clk(clk), .rst(rst), .en(DONE), .d({P,OF,UF,NANF,INFF,DNF,ZF}),
-.q(ResP, ResOF, ResUF, ResNANF, ResINFF, ResDNF, ResZF)
+		.clk(clk), .rst(rst), .en(DONE), .d({P,OF,UF,NANF,INFF,DNF,ZF}), .q({ResP, ResOF, ResUF, ResNANF, ResINFF, ResDNF, ResZF})
 	);
 
 rsreg FPM_rsreg_inst(
@@ -70,7 +70,12 @@ rsreg FPM_rsreg_inst(
 endmodule
 
 module rsreg
-(input clk, set, rst, output reg q);
+(
+	input clk, 
+	input set, 
+	input rst, 
+	output reg q
+);
     always @ (posedge clk, posedge rst)
     begin
         if(rst) q <=0;
