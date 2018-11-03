@@ -26,7 +26,7 @@ module vectored_int
     one_bit_inverter inv3 ( .in(ctrl3), .out(_ctrl3_) );
     one_bit_inverter inv4 ( .in(ctrl4), .out(_ctrl4_) );
 
-    assign int_addr = {30'b1, addr_bits};
+    assign int_addr = { {(30){1'b1}}, addr_bits };
 endmodule
 
 // parameterized tri-state buffer module
@@ -37,10 +37,10 @@ module tri_state_buffer #(parameter WIDTH=2)
     output wire [WIDTH-1:0] out
 );
 
-    always @(ctrl, in)
-    begin
-        out = ctrl ? in : {(WIDTH){1'bz}};
-    end // always
+    // always @(ctrl, in)
+    // begin
+       assign out = ctrl ? in : {(WIDTH){1'bZ}};
+    // end // always
 endmodule
 
 // Parameterized AND module
@@ -50,9 +50,9 @@ module AND #(parameter INPUTS=5)
     output wire out
 );
 
-    always @(in)
-    begin
-        out = (in & {(INPUTS){1'b1}}) ? 1'b1 : 1'b0;
+    // always @(in)
+    // begin
+        assign out = (in == {(INPUTS){1'b1}}) ? 1'b1 : 1'b0;
         // if (in & {(INPUTS){1'b1}})
         // begin
         //     out = 1'b1;
@@ -62,7 +62,7 @@ module AND #(parameter INPUTS=5)
         // begin
         //     out = 1'b0;
         // end // else
-    end // always
+    // end // always
 endmodule
 
 // one bit inverter module
@@ -72,8 +72,8 @@ module one_bit_inverter
     output wire out
 );
 
-    always @(in)
-    begin
-        out = ~in;
-    end // always
+    // always @(in)
+    // begin
+        assign out = ~in;
+    // end // always
 endmodule
