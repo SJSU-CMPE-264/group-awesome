@@ -8,7 +8,7 @@ module vectored_int
     output wire [31:0] int_addr
 );
 
-    wire ctrl1, ctrl2, ctrl3, ctrl4, _ctrl1_, _ctrl2_, _ctrl3_, _ctrl4_;
+    wire ctrl1, ctrl2, ctrl3, ctrl4;
     wire [1:0] addr_bits;
 
     tri_state_buffer buff1 ( .ctrl(ctrl1), .in(2'b00), .out(addr_bits) );
@@ -16,15 +16,11 @@ module vectored_int
     tri_state_buffer buff3 ( .ctrl(ctrl3), .in(2'b10), .out(addr_bits) );
     tri_state_buffer buff4 ( .ctrl(ctrl4), .in(2'b11), .out(addr_bits) );
 
-    AND and1 ( .in({int_ack, done1, _ctrl2_, _ctrl3_, _ctrl4_}), .out(ctrl1) );
-    AND and2 ( .in({int_ack, done2, _ctrl1_, _ctrl3_, _ctrl4_}), .out(ctrl2) );
-    AND and3 ( .in({int_ack, done3, _ctrl2_, _ctrl1_, _ctrl4_}), .out(ctrl3) );
-    AND and4 ( .in({int_ack, done4, _ctrl2_, _ctrl3_, _ctrl1_}), .out(ctrl4) );
-
-    one_bit_inverter inv1 ( .in(ctrl1), .out(_ctrl1_) );
-    one_bit_inverter inv2 ( .in(ctrl2), .out(_ctrl2_) );
-    one_bit_inverter inv3 ( .in(ctrl3), .out(_ctrl3_) );
-    one_bit_inverter inv4 ( .in(ctrl4), .out(_ctrl4_) );
+    controller_logic controller ( 
+                                  .in({done4, done3, done2, done1}), 
+                                  .ctrl_edge(int_ack), 
+                                  .out({ctrl4, ctrl3, ctrl2, ctrl1}) 
+                                );
 
     assign int_addr = { {(30){1'b1}}, addr_bits };
 endmodule
@@ -37,43 +33,33 @@ module tri_state_buffer #(parameter WIDTH=2)
     output wire [WIDTH-1:0] out
 );
 
-    // always @(ctrl, in)
-    // begin
-       assign out = ctrl ? in : {(WIDTH){1'bZ}};
-    // end // always
+    assign out = ctrl ? in : {(WIDTH){1'bZ}};
 endmodule
 
-// Parameterized AND module
-module AND #(parameter INPUTS=5)
+module controller_logic
 (
-    input wire [INPUTS-1:0] in,
-    output wire out
+    input wire [3:0] in,
+    input wire ctrl_edge,
+    output reg [3:0] out
 );
-
-    // always @(in)
+    // initial
     // begin
-        assign out = (in == {(INPUTS){1'b1}}) ? 1'b1 : 1'b0;
-        // if (in & {(INPUTS){1'b1}})
-        // begin
-        //     out = 1'b1;
-        // end // if
+    //   out = 4'b0000;
+    // end
 
-        // else
-        // begin
-        //     out = 1'b0;
-        // end // else
-    // end // always
-endmodule
+    always @(posedge ctrl_edge)
+    begin
+        casex (in)
+            4'b1xxx : begin out = 4'b1000; end
+            4'b01xx : begin out = 4'b0100; end
+            4'b001x : begin out = 4'b0010; end
+            4'b0001 : begin out = 4'b0001; end
+            default : begin out = 4'b0000; end
+        endcase
+    end
 
-// one bit inverter module
-module one_bit_inverter
-(
-    inout wire in,
-    output wire out
-);
-
-    // always @(in)
-    // begin
-        assign out = ~in;
-    // end // always
+    always @(negedge ctrl_edge)
+    begin
+      out = 4'b0000;
+    end
 endmodule

@@ -56,6 +56,7 @@ vectored_int  u_vectored_int (
 
 initial
 begin
+    runclk;
     if (int_addr != no_active_buffer)
     begin
         $display("No active buffer ERROR: ", int_addr);
@@ -103,13 +104,16 @@ begin
 
     done4 <= 1;
     done1 <= 1;
-    int_ack = 1;
     runclk;
-    if (int_ack != active_buffer4)
+    int_ack = 1;
+    runclk;runclk;
+    if (int_addr != active_buffer4)
     begin
         $display("Buffer 4 active ERROR: ", int_addr);
     end
 
+    reset;
+    runclk;runclk;runclk;
 
     $display("Test Finished.");
     $finish;
