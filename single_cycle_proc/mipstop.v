@@ -26,9 +26,12 @@ module mips_top(
     );
 
     wire    [31:0]     pc, instr, dataadr, writedata, readdata, dispDat, memdata, factdata, gpiodata, FPMdata, gpo1, gpo2;
-    wire     clksec, clk_db;
+    wire     clksec, clk_db, fact_done_in, fact_done_out, fp_done_in, fp_done_out;
     wire    [1:0] rdsel;
     reg        [ 15:0]     reg_hex;
+
+    reg [27:0] fact_addr = 28'h0000_080;
+    reg [27:0] FP_addr = 28'h0000_0A0;
     
     wire clk_5KHz;
 
@@ -47,11 +50,14 @@ module mips_top(
     // Instantiate processor and memories    
     mips     mips       (clk_db, reset, pc, instr, memwrite, dataadr, writedata, readdata, switches[4:0], dispDat);
     imem     imem       (pc[7:2], instr);
+    //SoC
     decoder dec         (memwrite, dataadr, wem, we1, we2, we3, rdsel);
     dmem    dmem        (clk_db, wem, dataadr, writedata, memdata);
-    faccel  fact        (clk_db, reset, we1, dataadr[3:2], writedata, factdata);
+    faccel  fact        (clk_db, reset, we1, dataadr[3:2], writedata, fact_done_in, factdata);
     gpio    gpio        (writedata, gpi1, 32'h0, dataadr[3:2], we2, clk_db, gpiodata, gpo1, gpo2);
-    FPWrapper FPWrapper (.clk(clk_db), .rst(reset), .A(dataadr[3:2]), .WE(we3), .InData(writedata), .OutData(FPMdata));
+    FPWrapper FPWrapper (.clk(clk_db), .rst(reset), .A(dataadr[3:2]), .WE(we3), .InData(writedata), .done_sig(fp_done_in), .OutData(FPMdata));
+    register #(1) faccel_reg ( .clk(fact_done_in), .rst(dataadr[31:4] == fact_addr), .en(1'b1), .in(1'b1), .out(fact_done_out) );
+    register #(1) FP_reg ( .clk(fp_done_in), .rst(dataadr[31:4] == FP_addr), .en(1'b1), .in(1'b1), .out(fp_done_out) );
     mux4 #(32) mux      (FPMdata, memdata, factdata, gpiodata, rdsel, readdata);
     
 //=======================================================================================================================
