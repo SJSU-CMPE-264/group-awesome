@@ -8,20 +8,22 @@ module vectored_int
     output wire [31:0] int_addr
 );
 
-    wire ctrl1, ctrl2, ctrl3, ctrl4;
     wire [1:0] addr_bits;
+    wire ctrl1, ctrl2, ctrl3, ctrl4;
+    wire [3:0] done_addr;
 
     tri_state_buffer buff1 ( .ctrl(ctrl1), .in(2'b00), .out(addr_bits) );
     tri_state_buffer buff2 ( .ctrl(ctrl2), .in(2'b01), .out(addr_bits) );
     tri_state_buffer buff3 ( .ctrl(ctrl3), .in(2'b10), .out(addr_bits) );
     tri_state_buffer buff4 ( .ctrl(ctrl4), .in(2'b11), .out(addr_bits) );
 
-    controller_logic controller ( 
-                                  .in({done4, done3, done2, done1}), 
-                                  .ctrl_edge(int_ack), 
-                                  .out({ctrl4, ctrl3, ctrl2, ctrl1}) 
-                                );
+    lookup_table ltable ( .in({done4, done3, done2, done1}), .out(done_addr) );
 
+    tri_state_buffer #(.WIDTH(4))
+        controller_grounded_buff ( .ctrl(~int_ack), .in(4'b0000), .out({ctrl4, ctrl3, ctrl2, ctrl1}) );
+    tri_state_buffer #(.WIDTH(4))
+        ctrl_sig_buff            ( .ctrl(int_ack), .in(done_addr), .out({ctrl4, ctrl3, ctrl2, ctrl1}) );
+    
     assign int_addr = { {(30){1'b1}}, addr_bits };
 endmodule
 
@@ -61,5 +63,23 @@ module controller_logic
     always @(negedge ctrl_edge)
     begin
       out = 4'b0000;
+    end
+endmodule
+
+module lookup_table
+(
+    input wire [3:0] in,
+    output reg [3:0] out
+);
+
+    always @(*)
+    begin
+        casex (in)
+            4'b1xxx : begin out = 4'b1000; end
+            4'b01xx : begin out = 4'b0100; end
+            4'b001x : begin out = 4'b0010; end
+            4'b0001 : begin out = 4'b0001; end
+            default : begin out = 4'b0000; end
+        endcase
     end
 endmodule
