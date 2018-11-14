@@ -19,8 +19,6 @@ module vectored_int
 
     lookup_table ltable ( .in({done4, done3, done2, done1}), .out(done_addr) );
 
-    lookup_table ltable ( .in({done4, done3, done2, done1}), .out(done_addr) );
-
     tri_state_buffer #(.WIDTH(4))
         controller_grounded_buff ( .ctrl(~int_ack), .in(4'b0000), .out({ctrl4, ctrl3, ctrl2, ctrl1}) );
     tri_state_buffer #(.WIDTH(4))
