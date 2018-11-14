@@ -16,7 +16,6 @@ module vectored_int
     tri_state_buffer buff2 ( .ctrl(ctrl2), .in(2'b01), .out(addr_bits) );
     tri_state_buffer buff3 ( .ctrl(ctrl3), .in(2'b10), .out(addr_bits) );
     tri_state_buffer buff4 ( .ctrl(ctrl4), .in(2'b11), .out(addr_bits) );
-//
     lookup_table ltable ( .in({done4, done3, done2, done1}), .out(done_addr) );
 
     tri_state_buffer #(.WIDTH(4))
