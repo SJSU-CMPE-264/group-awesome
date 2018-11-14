@@ -11,11 +11,11 @@
 
 // Main Decoder
 module maindec(
-    input    [ 5:0]    op,
-    output            memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel,
-    output    [ 1:0]    aluop );
+    input	[5:0]	op,
+    output			memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel,
+    output	[1:0]	aluop );
 
-    reg     [ 9:0]    controls;
+    reg		[9:0]	controls;
 
     assign {regwrite, regdst, alusrc, branch, memwrite, memtoreg, jump, jalsel, aluop} = controls;
 
@@ -34,12 +34,12 @@ endmodule
 
 // ALU Decoder
 module aludec(
-    input        [5:0]    funct,
-    input        [1:0]    aluop,
-    output      select_result, hi_lo, hi_lo_load, alu_jump,
-                [2:0]    alucontrol );
+    input	[5:0]	funct,
+    input	[1:0]	aluop,
+    output			select_result, hi_lo, hi_lo_load, alu_jump,
+			[2:0]	alucontrol );
 
-    reg [6:0] controls;
+    reg		[6:0]	controls;
     
     assign {alucontrol, select_result, hi_lo, hi_lo_load, alu_jump} = controls;
 
@@ -63,12 +63,12 @@ module aludec(
 endmodule
 // ALU
 module alu(
-    input        [31:0]    a, b,
-    input        [ 2:0]    alucont,
-    output reg    [31:0]    result,
-    output            zero );
+    input		[31:0]	a, b,
+    input		[2:0]	alucont,
+    output reg	[31:0]	result,
+    output				zero );
 
-    wire    [31:0]    b2, sum, slt;
+    wire		[31:0]	b2, sum, slt;
 
     assign b2 = alucont[2] ? ~b:b;
     assign sum = a + b2 + alucont[2];
@@ -87,16 +87,16 @@ endmodule
 
 // Adder
 module adder(
-    input    [31:0]    a, b,
-    output    [31:0]    y );
+    input	[31:0]	a, b,
+    output	[31:0]	y);
 
     assign y = a + b;
 endmodule
 
 // Two-bit left shifter
 module sl2(
-    input    [31:0]    a,
-    output    [31:0]    y );
+    input	[31:0]	a,
+    output	[31:0]	y);
 
     // shift left by 2
     assign y = {a[29:0], 2'b00};
@@ -104,8 +104,8 @@ endmodule
 
 // Sign Extension Unit
 module signext(
-    input    [15:0]    a,
-    output    [31:0]    y );
+    input	[15:0]	a,
+    output	[31:0]	y);
 
     assign y = {{16{a[15]}}, a};
 endmodule
@@ -154,13 +154,13 @@ module mux4 #(parameter WIDTH = 8) (
 // register file with one write port and three read ports
 // the 3rd read port is for prototyping dianosis
 module regfile(    
-    input            clk,
-    input            we3,
-    input     [ 4:0]    ra1, ra2, wa3,
-    input    [31:0]     wd3,
-    output     [31:0]     rd1, rd2,
-    input    [ 4:0]     ra4,
-    output     [31:0]     rd4);
+    input			clk,
+    input			we3,
+    input	[4:0]	ra1, ra2, wa3,
+    input	[31:0]	wd3,
+    output	[31:0]	rd1, rd2,
+    input	[4:0]	ra4,
+    output 	[31:0]	rd4);
 
     reg        [31:0]    rf[31:0];
     integer            n;
@@ -209,14 +209,14 @@ endmodule
 
 // Control Unit
 module controller(
-    input    [5:0]    op, funct,
-    input            zero,
-    output            memtoreg, memwrite, pcsrc, alusrc, regdst, regwrite, jump,
-    output          jalsel, select_result, hi_lo, hi_lo_load, alu_jump,        //new additions
-    output    [2:0]    alucontrol );
+    input	[5:0]	op, funct,
+    input			zero,
+    output			memtoreg, memwrite, pcsrc, alusrc, regdst, regwrite, jump,
+    output			jalsel, select_result, hi_lo, hi_lo_load, alu_jump,        //new additions
+    output	[2:0]	alucontrol );
 
-    wire    [1:0]    aluop;
-    wire            branch;
+    wire	[1:0]	aluop;
+    wire			branch;
 
     maindec    md(op, memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel, aluop);
     aludec    ad(funct, aluop, select_result, hi_lo, hi_lo_load, alu_jump, alucontrol);
@@ -226,66 +226,65 @@ endmodule
 
 // Data Path (excluding the instruction and data memories)
 module datapath(
-    input            clk, reset, memtoreg, pcsrc, alusrc, regdst, regwrite, jump,
-                   jalsel, select_result, hi_lo, hi_lo_load, alu_jump, //new additions
-    input    [2:0]    alucontrol,
-    output            zero,
-    output    [31:0]    pc,
-    input    [31:0]    instr,
-    output    [31:0]    aluout, writedata,
-    input    [31:0]    readdata,
-    input    [ 4:0]    dispSel,
-    output    [31:0]    dispDat );
+    input			clk, reset, memtoreg, pcsrc, alusrc, regdst, regwrite, jump, jalsel, select_result, hi_lo, hi_lo_load, alu_jump, //new additions
+    input	[2:0]	alucontrol,
+    output			zero,
+    output	[31:0]	pc,
+    input	[31:0]	instr,
+    output	[31:0]	aluout, writedata,
+    input	[31:0]	readdata,
+    input	[ 4:0]	dispSel,
+    output	[31:0]	dispDat );
 
-    wire [4:0]  writereg;
-    wire [31:0] pcnext, pcnextbr, pcplus4, pcbranch, signimm, signimmsh, srca, srcb, result;
-    wire [31:0] hireg, loreg, hi_out, lo_out, hilo_out, select_out, resultp1; //new addition
-    wire [4:0] rs_rt; //jalregmux - new addition
+    wire	[4:0]	writereg;
+    wire	[31:0]	pcnext, pcnextbr, pcplus4, pcbranch, signimm, signimmsh, srca, srcb, result;
+    wire	[31:0]	hireg, loreg, hi_out, lo_out, hilo_out, select_out, resultp1; //new addition
+    wire	[4:0]	rs_rt; //jalregmux - new addition
 
     // next PC logic
-    flopr #(32) pcreg(clk, reset, pcnext, pc);
-    adder       pcadd1(pc, 32'b100, pcplus4);
-    sl2         immsh(signimm, signimmsh);
-    adder       pcadd2(pcplus4, signimmsh, pcbranch);
-    mux2 #(32)  pcbrmux(pcplus4, pcbranch, pcsrc, pcnextbr);
-    mux4 #(32)  pcmux(pcnextbr, {pcplus4[31:28], instr[25:0], 2'b00}, srca, 31'b0, {alu_jump,jump}, pcnext);
+    flopr	#(32)	pcreg(clk, reset, pcnext, pc); // route pcnext through a 2to1 MUX and send MUX out in place of pcnext. MUX sel is called int_ack - Nick F
+    adder			pcadd1(pc, 32'b100, pcplus4);
+    sl2				immsh(signimm, signimmsh);
+    adder			pcadd2(pcplus4, signimmsh, pcbranch);
+    mux2	#(32)	pcbrmux(pcplus4, pcbranch, pcsrc, pcnextbr);
+    mux4	#(32)	pcmux(pcnextbr, {pcplus4[31:28], instr[25:0], 2'b00}, srca, 31'b0, {alu_jump,jump}, pcnext); //Add input 4 as ecpout from EPC register - Nick F
 
     // register file logic
-    regfile        rf(clk, regwrite, instr[25:21], instr[20:16], writereg, result, srca, writedata, dispSel, dispDat);
-    mux2 #(5)    wrmux(instr[20:16], instr[15:11], regdst, rs_rt);
-    mux2 #(5)   jalregmux(rs_rt, 5'b11111, jalsel, writereg);
-    mux2 #(32)    resmux(aluout, readdata, memtoreg, resultp1);
-    signext        se(instr[15:0], signimm);
+    regfile			rf(clk, regwrite, instr[25:21], instr[20:16], writereg, result, srca, writedata, dispSel, dispDat);
+    mux2	#(5)	wrmux(instr[20:16], instr[15:11], regdst, rs_rt);
+    mux2	#(5)	jalregmux(rs_rt, 5'b11111, jalsel, writereg);
+    mux2	#(32)	resmux(aluout, readdata, memtoreg, resultp1);
+    signext			se(instr[15:0], signimm);
 
     // ALU logic
-    mux2 #(32)    srcbmux(writedata, signimm, alusrc, srcb);
-    alu            alu(srca, srcb, alucontrol, aluout, zero);
+    mux2	#(32)	srcbmux(writedata, signimm, alusrc, srcb);
+    alu				alu(srca, srcb, alucontrol, aluout, zero); // take aluout as an input to the STATUS register - Nick F
     
     //multiply
-    multiply    multu(srca, srcb, hireg, loreg);
-    spreg       hi_reg(clk, hi_lo_load, hireg, hi_out);
-    spreg       lo_reg(clk, hi_lo_load, loreg, lo_out);
-    mux2 #(32)  hilomux(hi_out, lo_out, hi_lo, hilo_out); //connects into new mux that takes in resmux and hilomux
+    multiply		multu(srca, srcb, hireg, loreg);
+    spreg			hi_reg(clk, hi_lo_load, hireg, hi_out);
+    spreg			lo_reg(clk, hi_lo_load, loreg, lo_out);
+    mux2	#(32)	hilomux(hi_out, lo_out, hi_lo, hilo_out); //connects into new mux that takes in resmux and hilomux
     
-    mux2 #(32)  selmux(resultp1, hilo_out, select_result, select_out);
-    mux2 #(32)  jaldatamux(select_out, pcplus4, jalsel, result);
+    mux2	#(32)	selmux(resultp1, hilo_out, select_result, select_out);
+    mux2	#(32)	jaldatamux(select_out, pcplus4, jalsel, result);
 endmodule
 
 // The MIPS (excluding the instruction and data memories)
 module mips(
-    input            clk, reset,
+    input               clk, reset,
     output    [31:0]    pc,
     input     [31:0]    instr,
-    output            memwrite,
+    output              memwrite,
     output    [31:0]    aluout, writedata,
     input     [31:0]    readdata,
-    input    [ 4:0]    dispSel,
+    input     [4:0]     dispSel,
     output    [31:0]    dispDat );
 
     // deleted wire "branch" - not used
-    wire             memtoreg, pcsrc, zero, alusrc, regdst, regwrite, jump;
-    wire            jalsel, select_result, hi_lo, hi_lo_load, alu_jump;    //new additions
-    wire    [2:0]     alucontrol;
+    wire			memtoreg, pcsrc, zero, alusrc, regdst, regwrite, jump;
+    wire			jalsel, select_result, hi_lo, hi_lo_load, alu_jump;    //new additions
+    wire	[2:0]	alucontrol;
 
     controller c(instr[31:26], instr[5:0], zero,
                 memtoreg, memwrite, pcsrc,
@@ -301,10 +300,10 @@ endmodule
 
 // Instruction Memory
 module imem (
-    input    [ 5:0]    a,
-    output     [31:0]    dOut );
-    
-    reg        [31:0]    rom[0:63];
+    input	[ 5:0]	a,
+    output	[31:0]	dOut );
+
+    reg		[31:0]	rom[0:63];
     
     //initialize rom from memfile_s.dat
     initial
@@ -316,14 +315,14 @@ endmodule
 
 // Data Memory
 module dmem (
-    input            clk,
-    input            we,
-    input    [31:0]    addr,
-    input    [31:0]    dIn,
-    output     [31:0]    dOut );
+    input			clk,
+    input			we,
+    input	[31:0]	addr,
+    input	[31:0]	dIn,
+    output	[31:0]	dOut );
     
-    reg        [31:0]    ram[63:0];
-    integer            n;
+    reg		[31:0]	ram[63:0];
+    integer			n;
     
     //initialize ram to all FFs
     initial
