@@ -13,22 +13,24 @@
 module maindec(
     input	[5:0]	op,
     output			memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel,
-    output	[1:0]	aluop );
+    output	[1:0]	aluop,
+	output			status_write ); //added for vectored interrupt
 
-    reg		[9:0]	controls;
+    reg		[10:0]	controls;
 
     assign {regwrite, regdst, alusrc, branch, memwrite, memtoreg, jump, jalsel, aluop} = controls;
 
     always @(*)
         case(op)
-            6'b000000: controls <= 10'b1100000010; //Rtype
-            6'b100011: controls <= 10'b1010010000; //LW
-            6'b101011: controls <= 10'b0010100000; //SW
-            6'b000100: controls <= 10'b0001000001; //BEQ
-            6'b001000: controls <= 10'b1010000000; //ADDI
-            6'b000010: controls <= 10'b0000001000; //J
-            6'b000011: controls <= 10'b1000001100; //JAL
-            default:   controls <= 10'bxxxxxxxxx; //???
+            6'b000000: controls <= 11'b11000000100; //Rtype
+            6'b100011: controls <= 11'b10100100000; //LW
+            6'b101011: controls <= 11'b00101000000; //SW
+            6'b000100: controls <= 11'b00010000010; //BEQ
+            6'b001000: controls <= 11'b10100000000; //ADDI
+            6'b000010: controls <= 11'b00000010000; //J
+            6'b000011: controls <= 11'b10000011000; //JAL
+            6'b??????: controls <= 11'b??????????1; //status_write for interrupt
+            default:   controls <= 11'bxxxxxxxxxx; //???
         endcase
 endmodule
 
@@ -61,6 +63,27 @@ module aludec(
             endcase
         endcase
 endmodule
+
+//Interrupt Encoder
+module interruptenc(
+    input       status_bit, interrupt, 
+    output reg  int_ack, epcwrite );
+
+    always @(*)
+    begin 
+        if (status_bit)
+        begin 
+            int_ack = 0;
+            epcwrite = 0;
+        end
+        else 
+        begin
+            int_ack = 1;
+            epcwrite = 1;
+        end
+    end
+endmodule
+
 // ALU
 module alu(
     input		[31:0]	a, b,
@@ -121,17 +144,17 @@ module flopr #(parameter WIDTH = 8) (
         else       q <= d;
 endmodule
 
-// commented out since flopenr is not used
-//module flopenr #(parameter WIDTH = 8) (
-//    input                    clk, reset,
-//    input                    en,
-//    input        [WIDTH-1:0]    d,
-//    output reg    [WIDTH-1:0]    q);
-//
-//    always @(posedge clk, posedge reset)
-//        if      (reset) q <= 0;
-//        else if (en)    q <= d;
-//endmodule
+
+module flopenr #(parameter WIDTH = 8) (
+   input                    clk, reset,
+   input                    en,
+   input        [WIDTH-1:0]    d,
+   output reg    [WIDTH-1:0]    q);
+
+   always @(posedge clk, posedge reset)
+       if      (reset) q <= 0;
+       else if (en)    q <= d;
+endmodule
 
 // Parameterized 2-to-1 MUX
 module mux2 #(parameter WIDTH = 8) (
@@ -211,22 +234,27 @@ endmodule
 module controller(
     input	[5:0]	op, funct,
     input			zero,
+	input			status_bit, interrupt,    //added for vectored interrupt
     output			memtoreg, memwrite, pcsrc, alusrc, regdst, regwrite, jump,
     output			jalsel, select_result, hi_lo, hi_lo_load, alu_jump,        //new additions
-    output	[2:0]	alucontrol );
+    output	[2:0]	alucontrol,
+	output			status_write, int_ack, epcwrite );  //added for vectored interrupt
+
 
     wire	[1:0]	aluop;
     wire			branch;
 
-    maindec    md(op, memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel, aluop);
+    maindec    md(op, memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel, aluop, status_write);
     aludec    ad(funct, aluop, select_result, hi_lo, hi_lo_load, alu_jump, alucontrol);
+    interruptenc    ie(status_bit, interrupt, int_ack, epcwrite);   //added for vectored interrupt
 
     assign pcsrc = branch & zero;
 endmodule
 
 // Data Path (excluding the instruction and data memories)
 module datapath(
-    input			clk, reset, memtoreg, pcsrc, alusrc, regdst, regwrite, jump, jalsel, select_result, hi_lo, hi_lo_load, alu_jump, //new additions
+    input			clk, reset, memtoreg, pcsrc, alusrc, regdst, regwrite, jump, jalsel, select_result, hi_lo, hi_lo_load, alu_jump,
+    input           int_ack, epcwrite, status_write, //new additions - Nick F
     input	[2:0]	alucontrol,
     output			zero,
     output	[31:0]	pc,
@@ -234,20 +262,25 @@ module datapath(
     output	[31:0]	aluout, writedata,
     input	[31:0]	readdata,
     input	[ 4:0]	dispSel,
-    output	[31:0]	dispDat );
+    output	[31:0]	dispDat,
+    input           done1, done2, done3, done4, // new additions - Nick F
+    input   [31:0]  int_addr, // new additions - Nick F
+    output  [31:0]  status_bit); // new additions - Nick F
 
     wire	[4:0]	writereg;
-    wire	[31:0]	pcnext, pcnextbr, pcplus4, pcbranch, signimm, signimmsh, srca, srcb, result;
+    wire	[31:0]	pcnext, pcnext_out, pcnextbr, pcplus4, pcbranch, signimm, signimmsh, srca, srcb, result;
     wire	[31:0]	hireg, loreg, hi_out, lo_out, hilo_out, select_out, resultp1; //new addition
     wire	[4:0]	rs_rt; //jalregmux - new addition
+    wire    [31:0]  epcout; //epc_reg -  new additions - Nick F
 
     // next PC logic
-    flopr	#(32)	pcreg(clk, reset, pcnext, pc); // route pcnext through a 2to1 MUX and send MUX out in place of pcnext. MUX sel is called int_ack - Nick F
+    flopr	#(32)	pcreg(clk, reset, pcnext_out, pc); // route pcnext through a 2to1 MUX and send MUX out in place of pcnext. MUX sel is called int_ack - Nick F
+    mux2	#(32)	intmux(pcnext, int_ack, pcnext_out);
     adder			pcadd1(pc, 32'b100, pcplus4);
     sl2				immsh(signimm, signimmsh);
     adder			pcadd2(pcplus4, signimmsh, pcbranch);
     mux2	#(32)	pcbrmux(pcplus4, pcbranch, pcsrc, pcnextbr);
-    mux4	#(32)	pcmux(pcnextbr, {pcplus4[31:28], instr[25:0], 2'b00}, srca, 31'b0, {alu_jump,jump}, pcnext); //Add input 4 as ecpout from EPC register - Nick F
+    mux4	#(32)	pcmux(pcnextbr, {pcplus4[31:28], instr[25:0], 2'b00}, srca, epcout, {alu_jump,jump}, pcnext); //Add input 4 as epcout from EPC register - Nick F
 
     // register file logic
     regfile			rf(clk, regwrite, instr[25:21], instr[20:16], writereg, result, srca, writedata, dispSel, dispDat);
@@ -260,7 +293,7 @@ module datapath(
     mux2	#(32)	srcbmux(writedata, signimm, alusrc, srcb);
     alu				alu(srca, srcb, alucontrol, aluout, zero); // take aluout as an input to the STATUS register - Nick F
     
-    //multiply
+    // Multiply
     multiply		multu(srca, srcb, hireg, loreg);
     spreg			hi_reg(clk, hi_lo_load, hireg, hi_out);
     spreg			lo_reg(clk, hi_lo_load, loreg, lo_out);
@@ -268,6 +301,11 @@ module datapath(
     
     mux2	#(32)	selmux(resultp1, hilo_out, select_result, select_out);
     mux2	#(32)	jaldatamux(select_out, pcplus4, jalsel, result);
+
+    // Vectored interrupt
+    vectored_int	v_int(int_ack, done1, done2, done3, done4, int_addr);
+    flopenr			epc_reg(clk, reset, epcwrite, pcnext, epcout);
+    flopenr			stat_reg(clk, int_ack, status_write, aluout, status_bit);
 endmodule
 
 // The MIPS (excluding the instruction and data memories)
