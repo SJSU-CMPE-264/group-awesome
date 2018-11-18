@@ -273,7 +273,7 @@ module datapath(
     mux2 #(32)  jaldatamux(writeback, pcplus4, jalsel, result);
 
     // cp0 extension
-    wire [31]   excentry;
+    wire [31:0]   excentry;
     wire        irq;
     wire        statusout;
     wire        causewrite;
@@ -290,7 +290,7 @@ module datapath(
     register #(32) cause  ( .clk(clk), .rst(rst), 
                             .en(causewrite), 
                             .in({31'b0, irq}), 
-                            .out(casueout) );
+                            .out(causeout) );
     register #( 1) status ( .clk(clk), .rst(statusrst), 
                             .en(irq ^ status), 
                             .in(irq), 
