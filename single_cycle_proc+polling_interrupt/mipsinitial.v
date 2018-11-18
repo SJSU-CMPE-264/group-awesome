@@ -65,7 +65,7 @@ module aludec(
         endcase
 endmodule
 
-endmodule // excdec 
+//endmodule // excdec Not sure why this is here, leaving just in case - Matt
 
 // ALU
 module alu(
