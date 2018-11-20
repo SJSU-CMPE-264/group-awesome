@@ -12,26 +12,27 @@
 // Main Decoder
 module maindec(
     input  [5:0] op,
-    output       memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel,
+    output       memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel, statusrst, mfc0, rfe
     
     // TODO: add statusrst, mfc0, rfe, // input controls for exception handling
     output [1:0] aluop );
 
-    reg [9:0] controls;
+    reg [12:0] controls;
 
-    assign {regwrite, regdst, alusrc, branch, memwrite, memtoreg, jump, jalsel, aluop} = controls;
+    assign {regwrite, regdst, alusrc, branch, memwrite, memtoreg, jump, jalsel, aluop, statusrst, mfc0, rfe} = controls;
 
     always @(*)
         case(op)
-            6'b000000: controls <= 10'b1100000010; // Rtype
-            6'b100011: controls <= 10'b1010010000; // LW
-            6'b101011: controls <= 10'b0010100000; // SW
-            6'b010000: controls <= 10'b0000000000; // EXC
-            6'b000100: controls <= 10'b0001000001; // BEQ
-            6'b001000: controls <= 10'b1010000000; // ADDI
-            6'b000010: controls <= 10'b0000001000; // J
-            6'b000011: controls <= 10'b1000001100; // JAL
-            default:   controls <= 10'bxxxxxxxxx;  // ???
+            6'b000000: controls <= 13'b1100000010000; // Rtype
+            6'b100011: controls <= 13'b1010010000000; // LW
+            6'b101011: controls <= 13'b0010100000000; // SW
+            6'b010000: controls <= 13'b0000000000001; // rfe
+            6'b010001: controls <= 13'b0100000000110; // mfc0	TODO: statusrst and regdst signals need careful consideration
+            6'b000100: controls <= 13'b0001000001000; // BEQ
+            6'b001000: controls <= 13'b1010000000000; // ADDI
+            6'b000010: controls <= 13'b0000001000000; // J
+            6'b000011: controls <= 13'b1000001100000; // JAL
+            default:   controls <= 13'bxxxxxxxxxxxxx; // ???
         endcase
 endmodule
 
@@ -216,7 +217,7 @@ module controller(
     wire [1:0] aluop;
     wire       branch;
     // TODO: add statusrst, mfc0, rfe, // input controls for exception handling
-    maindec md(op, memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel, aluop);
+    maindec md(op, memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel, statusrst, mfc0, rfe, aluop);
     aludec  ad(funct, aluop, select_result, hi_lo, hi_lo_load, alu_jump, alucontrol);
 
     assign pcsrc = branch & zero;
