@@ -11,7 +11,7 @@ module SoC
 
     wire wem, we1, we2, we3, fact_done_in, fp_done_in;
     wire [1:0] out_mux_sel;
-    wire [31:0] memdata, factdata, gpiodata, FPMdata;
+    wire [31:0] memdata, factdata, gpiodata, FPMdata, gpo1, gpo2;
 
     reg [27:0] fact_addr = 28'h0000_080;
     reg [27:0] FP_addr = 28'h0000_0A0;

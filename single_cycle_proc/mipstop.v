@@ -25,10 +25,9 @@ module mips_top(
     
     );
 
-    wire    [31:0]     pc, instr, dataadr, writedata, readdata, dispDat, memdata, factdata, gpiodata, FPMdata, gpo1, gpo2;
-    wire     clksec, clk_db, faccel_done, FPM_done;
-    wire    [1:0] rdsel;
-    reg        [ 15:0]     reg_hex;
+    wire    [31:0]     pc, instr, dataadr, writedata, readdata, dispDat;
+    wire    clksec, clk_db, faccel_done, FPM_done;
+    reg     [ 15:0]    reg_hex;
 
     reg [27:0] fact_addr = 28'h0000_080;
     reg [27:0] FP_addr = 28'h0000_0A0;
