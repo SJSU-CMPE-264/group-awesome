@@ -11,10 +11,10 @@
 
 // Main Decoder
 module maindec(
-    input	[5:0]	op,
-    output			memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel,
-    output	[1:0]	aluop,
-	output			status_write ); //added for vectored interrupt
+    input   [5:0]   op,
+    output          memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel,
+    output  [1:0]   aluop, 
+    output          status_write ); //added for vectored interrupt
 
     reg		[10:0]	controls;
 
@@ -316,19 +316,24 @@ module mips(
     output              memwrite,
     output    [31:0]    aluout, writedata,
     input     [31:0]    readdata,
-    input     [4:0]     dispSel,
-    output    [31:0]    dispDat );
+    input    [ 4:0]    dispSel,
+    output    [31:0]    dispDat,
+    input               interrupt //for vectored interrupt
+    );
 
     // deleted wire "branch" - not used
-    wire			memtoreg, pcsrc, zero, alusrc, regdst, regwrite, jump;
-    wire			jalsel, select_result, hi_lo, hi_lo_load, alu_jump;    //new additions
-    wire	[2:0]	alucontrol;
+    wire             memtoreg, pcsrc, zero, alusrc, regdst, regwrite, jump;
+    wire            jalsel, select_result, hi_lo, hi_lo_load, alu_jump;    //new additions
+    wire            status_bit, status_write, int_ack, epcwrite; //for vectored interrupt
+    wire    [2:0]     alucontrol;
 
-    controller c(instr[31:26], instr[5:0], zero,
+    controller c(instr[31:26], instr[5:0], zero, 
+                status_bit, interrupt, //for vectored interrupt
                 memtoreg, memwrite, pcsrc,
                 alusrc, regdst, regwrite, jump,
                 jalsel, select_result, hi_lo, hi_lo_load, alu_jump,
-                alucontrol);
+                alucontrol,
+                status_write, int_ack, epcwrite); //for vectored interrupt
     datapath dp(clk, reset, memtoreg, pcsrc,
                 alusrc, regdst, regwrite, jump,
                 jalsel, select_result, hi_lo, hi_lo_load, alu_jump,

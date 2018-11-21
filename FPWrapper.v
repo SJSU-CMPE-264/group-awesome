@@ -3,9 +3,10 @@
 module FPWrapper(
 	input clk,
 	input rst,
-input [1:0] A,
+	input [1:0] A,
 	input WE,
 	input [31:0] InData,
+	output done_sig,
 	output [31:0] OutData
 	);
 
@@ -15,6 +16,7 @@ wire OF, UF, NANF, INFF, DNF, ZF, ResOF, ResUF, ResNANF, ResINFF, ResDNF, ResZF,
 wire [1:0] out_decoder;
 wire [31:0] OpA, OpB, P, ResP;
 
+assign done_sig = DONE;
 
 //Address Decoder
 fpmul_addr_decoder FPdec(WE, A, we0, we1, we2, out_decoder);
