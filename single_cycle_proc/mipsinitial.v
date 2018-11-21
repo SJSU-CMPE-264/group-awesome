@@ -29,7 +29,7 @@ module maindec(
             6'b001000: controls <= 11'b10100000000; //ADDI
             6'b000010: controls <= 11'b00000010000; //J
             6'b000011: controls <= 11'b10000011000; //JAL
-            6'b??????: controls <= 11'b??????????1; //status_write for interrupt
+            6'b111110: controls <= 11'b00000000001; //status_write for interrupt
             default:   controls <= 11'bxxxxxxxxxx; //???
         endcase
 endmodule
