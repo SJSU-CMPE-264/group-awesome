@@ -11,24 +11,26 @@
 
 // Main Decoder
 module maindec(
-    input    [ 5:0]    op,
-    output            memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel,
-    output    [ 1:0]    aluop );
+    input   [5:0]   op,
+    output          memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel,
+    output  [1:0]   aluop 
+    output          status_write ); //added for vectored interrupt
 
-    reg     [ 9:0]    controls;
+    reg     [10:0]   controls;
 
-    assign {regwrite, regdst, alusrc, branch, memwrite, memtoreg, jump, jalsel, aluop} = controls;
+    assign {regwrite, regdst, alusrc, branch, memwrite, memtoreg, jump, jalsel, aluop, status_write} = controls;
 
     always @(*)
         case(op)
-            6'b000000: controls <= 10'b1100000010; //Rtype
-            6'b100011: controls <= 10'b1010010000; //LW
-            6'b101011: controls <= 10'b0010100000; //SW
-            6'b000100: controls <= 10'b0001000001; //BEQ
-            6'b001000: controls <= 10'b1010000000; //ADDI
-            6'b000010: controls <= 10'b0000001000; //J
-            6'b000011: controls <= 10'b1000001100; //JAL
-            default:   controls <= 10'bxxxxxxxxx; //???
+            6'b000000: controls <= 11'b11000000100; //Rtype
+            6'b100011: controls <= 11'b10100100000; //LW
+            6'b101011: controls <= 11'b00101000000; //SW
+            6'b000100: controls <= 11'b00010000010; //BEQ
+            6'b001000: controls <= 11'b10100000000; //ADDI
+            6'b000010: controls <= 11'b00000010000; //J
+            6'b000011: controls <= 11'b10000011000; //JAL
+            6'b111110: controls <= 11'b00000010101; //JEPC
+            default:   controls <= 11'bxxxxxxxxxx; //???
         endcase
 endmodule
 
@@ -61,6 +63,27 @@ module aludec(
             endcase
         endcase
 endmodule
+
+//Interrupt Encoder
+module interruptenc(
+    input           status_bit, interrupt, 
+    output          int_ack, epcwrite );
+
+    always @(*)
+    begin 
+        if (!status_bit)
+        begin 
+            int_ack = 0;
+            epcwrite = 0;
+        end
+        else if (status_bit && interrupt)
+        begin
+            int_ack = 1;
+            epcwrite = 1;
+        end
+    end
+endmodule
+
 // ALU
 module alu(
     input        [31:0]    a, b,
@@ -211,15 +234,18 @@ endmodule
 module controller(
     input    [5:0]    op, funct,
     input            zero,
+    input           status_bit, interrupt,    //added for vectored interrupt
     output            memtoreg, memwrite, pcsrc, alusrc, regdst, regwrite, jump,
     output          jalsel, select_result, hi_lo, hi_lo_load, alu_jump,        //new additions
-    output    [2:0]    alucontrol );
+    output    [2:0]    alucontrol, 
+    output          status_write, int_ack, epcwrite );  //added for vectored interrupt
 
     wire    [1:0]    aluop;
     wire            branch;
 
-    maindec    md(op, memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel, aluop);
+    maindec    md(op, memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, jalsel, aluop, status_write);
     aludec    ad(funct, aluop, select_result, hi_lo, hi_lo_load, alu_jump, alucontrol);
+    interruptenc    ie(status_bit, interrupt, int_ack, epcwrite);   //added for vectored interrupt
 
     assign pcsrc = branch & zero;
 endmodule
