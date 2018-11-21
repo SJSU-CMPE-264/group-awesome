@@ -18,7 +18,7 @@ module maindec(
 
     reg     [10:0]   controls;
 
-    assign {regwrite, regdst, alusrc, branch, memwrite, memtoreg, jump, jalsel, aluop} = controls;
+    assign {regwrite, regdst, alusrc, branch, memwrite, memtoreg, jump, jalsel, aluop, status_write} = controls;
 
     always @(*)
         case(op)
@@ -76,7 +76,7 @@ module interruptenc(
             int_ack = 0;
             epcwrite = 0;
         end
-        else 
+        else if (!status_bit && interrupt)
         begin
             int_ack = 1;
             epcwrite = 1;
