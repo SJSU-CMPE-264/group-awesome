@@ -1,7 +1,7 @@
 module faccel
-(input Clk, Rst, we, input [1:0] a, input [3:0] d, output [31:0] out);
+(input Clk, Rst, we, input [1:0] a, input [3:0] d, output done_sig, output [31:0] out);
 
-    wire we1, we2, go, gopulse, done, status;
+    wire we1, we2, go, gopulse, status;
     wire [1:0] rdsel;
     wire [3:0] n;
     wire [31:0] nf, nfsig;
@@ -11,9 +11,9 @@ module faccel
     adecoder        AD (we, a, we1, we2, rdsel);
     register  #(4)  N  (Clk, Rst, we1, d, n);
     register  #(1)  G  (Clk, Rst, we2, d[0], go);
-    Factorial #(4)  F  (Clk, Rst, gopulse, n, done, nf);
-    register  #(32) NF (Clk, Rst, done, nf, nfsig);
-    rsreg2          S  (Clk, Rst, gopulse, done, status);
+    Factorial #(4)  F  (Clk, Rst, gopulse, n, done_sig, nf);
+    register  #(32) NF (Clk, Rst, done_sig, nf, nfsig);
+    rsreg2          S  (Clk, Rst, gopulse, done_sig, status);
     mux4      #(32) M  ({27'b0, n}, {30'b0, go}, {30'b0, status}, nfsig, rdsel, out);
 
 endmodule

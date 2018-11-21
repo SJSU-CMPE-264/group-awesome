@@ -25,10 +25,9 @@ module mips_top(
     
     );
 
-    wire    [31:0]     pc, instr, dataadr, writedata, readdata, dispDat, memdata, factdata, gpiodata, FPMdata, gpo1, gpo2;
-    wire     Clksec, Clk_db;
-    wire    [1:0] rdsel;
-    reg        [ 15:0]     reg_hex;
+    wire    [31:0]     pc, instr, dataadr, writedata, readdata, dispDat;
+    wire    clksec, clk_db, faccel_done, FPM_done;
+    reg     [ 15:0]    reg_hex;
     
     wire Clk_5KHz;
 
@@ -45,14 +44,22 @@ module mips_top(
     debounce db (Clk_5KHz, pb, Clk_db);
       
     // Instantiate processor and memories    
-    mips     mips       (Clk_db, reset, pc, instr, memwrite, dataadr, writedata, readdata, switches[4:0], dispDat);
+    mips     mips       (clk_db, reset, pc, instr, memwrite, dataadr, writedata, readdata, switches[4:0], dispDat, (faccel_done | FPM_done));
     imem     imem       (pc[7:2], instr);
-    decoder dec         (memwrite, dataadr, wem, we1, we2, we3, rdsel);
-    dmem    dmem        (Clk_db, wem, dataadr, writedata, memdata);
-    faccel  fact        (Clk_db, reset, we1, dataadr[3:2], writedata, factdata);
-    gpio    gpio        (writedata, gpi1, 32'h0, dataadr[3:2], we2, Clk_db, gpiodata, gpo1, gpo2);
-    FPWrapper FPWrapper (.Clk(Clk_db), .Rst(reset), .A(dataadr[3:2]), .WE(we3), .InData(writedata), .OutData(FPMdata));
-    mux4 #(32) mux      (FPMdata, memdata, factdata, gpiodata, rdsel, readdata);
+    //SoC
+    SoC     soc ( 
+                .addr(dataadr), .write_data(writedata), .gpi1(gpi1),
+                .WE(memwrite), .reset(reset), .clk(clk_db), .data_out(readdata),
+                .faccel_done(faccel_done), .FPM_done(FPM_done) 
+                ); //faccel_done and FPM_done will be used for interrupt signal in full integration
+    // decoder dec         (memwrite, dataadr, wem, we1, we2, we3, rdsel);
+    // dmem    dmem        (clk_db, wem, dataadr, writedata, memdata);
+    // faccel  fact        (clk_db, reset, we1, dataadr[3:2], writedata, fact_done_in, factdata);
+    // gpio    gpio        (writedata, gpi1, 32'h0, dataadr[3:2], we2, clk_db, gpiodata, gpo1, gpo2);
+    // FPWrapper FPWrapper (.clk(clk_db), .rst(reset), .A(dataadr[3:2]), .WE(we3), .InData(writedata), .done_sig(fp_done_in), .OutData(FPMdata));
+    // register #(1) faccel_reg ( .clk(fact_done_in), .rst(dataadr[31:4] == fact_addr), .en(1'b1), .in(1'b1), .out(fact_done_out) );
+    // register #(1) FP_reg ( .clk(fp_done_in), .rst(dataadr[31:4] == FP_addr), .en(1'b1), .in(1'b1), .out(fp_done_out) );
+    // mux4 #(32) mux      (FPMdata, memdata, factdata, gpiodata, rdsel, readdata);
     
 //=======================================================================================================================
 //=======================================================================================================================
