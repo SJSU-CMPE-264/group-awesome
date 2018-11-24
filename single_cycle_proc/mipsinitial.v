@@ -263,15 +263,15 @@ module datapath(
     input	[31:0]	readdata,
     input	[ 4:0]	dispSel,
     output	[31:0]	dispDat,
-    input           done1, done2, done3, done4, // new additions - Nick F
-    input   [31:0]  int_addr, // new additions - Nick F
-    output  [31:0]  status_bit); // new additions - Nick F
+    input			done1, done2, done3, done4, // new additions - Nick F
+    input	[31:0]	int_addr, // new additions - Nick F
+    output			status_bit); // new additions - Nick F
 
     wire	[4:0]	writereg;
     wire	[31:0]	pcnext, pcnext_out, pcnextbr, pcplus4, pcbranch, signimm, signimmsh, srca, srcb, result;
     wire	[31:0]	hireg, loreg, hi_out, lo_out, hilo_out, select_out, resultp1; //new addition
     wire	[4:0]	rs_rt; //jalregmux - new addition
-    wire    [31:0]  epcout; //epc_reg -  new additions - Nick F
+    wire	[31:0]	epcout; //epc_reg -  new additions - Nick F
 
     // next PC logic
     flopr	#(32)	pcreg(clk, reset, pcnext_out, pc); // route pcnext through a 2to1 MUX and send MUX out in place of pcnext. MUX sel is called int_ack - Nick F
@@ -304,8 +304,8 @@ module datapath(
 
     // Vectored interrupt
     vectored_int	v_int(int_ack, done1, done2, done3, done4, int_addr);
-    flopenr			epc_reg(clk, reset, epcwrite, pcnext, epcout);
-    flopenr			stat_reg(clk, int_ack, status_write, aluout, status_bit);
+    flopenr	#(32)	epc_reg(clk, reset, epcwrite, pcnext, epcout);
+    flopenr	#(1)	stat_reg(clk, int_ack, status_write, 1'b1, status_bit);
 endmodule
 
 // The MIPS (excluding the instruction and data memories)
