@@ -16,7 +16,7 @@ module maindec(
     output  [1:0]   aluop, 
     output          status_write ); //added for vectored interrupt
 
-    reg		[10:0]	controls;
+    reg     [10:0]  controls;
 
     assign {regwrite, regdst, alusrc, branch, memwrite, memtoreg, jump, jalsel, aluop, status_write} = controls;
 
