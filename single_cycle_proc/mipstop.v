@@ -44,7 +44,7 @@ module mips_top(
     debounce db (Clk_5KHz, pb, Clk_db);
       
     // Instantiate processor and memories    
-    mips     mips       (clk_db, reset, pc, instr, memwrite, dataadr, writedata, readdata, switches[4:0], dispDat, (faccel_done | FPM_done));
+    mips     mips       (clk_db, reset, pc, instr, memwrite, dataadr, writedata, readdata, switches[4:0], dispDat, faccel_done, FPM_done, 1'b0, 1'b0);
     imem     imem       (pc[7:2], instr);
     //SoC
     SoC     soc ( 

@@ -264,7 +264,7 @@ module datapath(
     input	[ 4:0]	dispSel,
     output	[31:0]	dispDat,
     input			done1, done2, done3, done4, // new additions - Nick F
-    input	[31:0]	int_addr, // new additions - Nick F
+    // input	[31:0]	int_addr, // new additions - Nick F
     output			status_bit); // new additions - Nick F
 
     wire	[4:0]	writereg;
@@ -272,10 +272,11 @@ module datapath(
     wire	[31:0]	hireg, loreg, hi_out, lo_out, hilo_out, select_out, resultp1; //new addition
     wire	[4:0]	rs_rt; //jalregmux - new addition
     wire	[31:0]	epcout; //epc_reg -  new additions - Nick F
+    wire    [31:0]  int_addr; //int_addr - new addition - Nick F
 
     // next PC logic
     flopr	#(32)	pcreg(clk, reset, pcnext_out, pc); // route pcnext through a 2to1 MUX and send MUX out in place of pcnext. MUX sel is called int_ack - Nick F
-    mux2	#(32)	intmux(pcnext, int_ack, pcnext_out);
+    mux2	#(32)	intmux(pcnext, int_addr, int_ack, pcnext_out);
     adder			pcadd1(pc, 32'b100, pcplus4);
     sl2				immsh(signimm, signimmsh);
     adder			pcadd2(pcplus4, signimmsh, pcbranch);
@@ -316,29 +317,37 @@ module mips(
     output              memwrite,
     output    [31:0]    aluout, writedata,
     input     [31:0]    readdata,
-    input    [ 4:0]    dispSel,
+    input     [ 4:0]    dispSel,
     output    [31:0]    dispDat,
-    input               interrupt //for vectored interrupt
+    // input               interrupt, //for vectored interrupt
+    input               done1, done2, done3, done4 //for vectored interrupt
     );
 
     // deleted wire "branch" - not used
-    wire             memtoreg, pcsrc, zero, alusrc, regdst, regwrite, jump;
+    wire            memtoreg, pcsrc, zero, alusrc, regdst, regwrite, jump;
     wire            jalsel, select_result, hi_lo, hi_lo_load, alu_jump;    //new additions
     wire            status_bit, status_write, int_ack, epcwrite; //for vectored interrupt
-    wire    [2:0]     alucontrol;
+    wire    [2:0]   alucontrol;
+    // wire    [31:0]  int_addr; //for vectored interrupt
 
     controller c(instr[31:26], instr[5:0], zero, 
-                status_bit, interrupt, //for vectored interrupt
+                status_bit, (done1 | done2 | done3 | done4), //for vectored interrupt
                 memtoreg, memwrite, pcsrc,
                 alusrc, regdst, regwrite, jump,
                 jalsel, select_result, hi_lo, hi_lo_load, alu_jump,
                 alucontrol,
                 status_write, int_ack, epcwrite); //for vectored interrupt
+
     datapath dp(clk, reset, memtoreg, pcsrc,
                 alusrc, regdst, regwrite, jump,
                 jalsel, select_result, hi_lo, hi_lo_load, alu_jump,
+                int_ack, epcwrite, status_write, //for vectored interrupt
                 alucontrol, zero, pc, instr, aluout,
-                writedata, readdata, dispSel, dispDat);
+                writedata, readdata, dispSel, dispDat,
+                done1, done2, done3, done4, //for vectored interrupt
+                // int_addr,
+                status_bit //for vectored interrupt
+                );
 endmodule
 
 // Instruction Memory
