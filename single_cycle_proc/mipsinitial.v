@@ -352,15 +352,20 @@ endmodule
 
 // Instruction Memory
 module imem (
-    input	[ 5:0]	a,
+    input	[ 6:0]	a,
     output	[31:0]	dOut );
 
-    reg		[31:0]	rom[0:63];
+    reg		[31:0]	rom[0:127];
     
     //initialize rom from memfile_s.dat
     initial
+    begin
         $readmemh("memfile_s.dat", rom);
-    
+        rom[124] = 32'h0800_0040;
+        rom[125] = 32'h0800_0050; //change to appropriate address
+        rom[126] = 32'h0800_0060; //change to appropriate address
+        rom[127] = 32'h0800_0070; //change to appropriate address
+    end
     //simple rom
     assign dOut = rom[a];
 endmodule

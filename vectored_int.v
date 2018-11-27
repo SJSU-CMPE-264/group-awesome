@@ -23,7 +23,7 @@ module vectored_int
     tri_state_buffer #(.WIDTH(4))
         ctrl_sig_buff            ( .ctrl(int_ack), .in(done_addr), .out({ctrl4, ctrl3, ctrl2, ctrl1}) );
     
-    assign int_addr = { {(30){1'b1}}, addr_bits };
+    assign int_addr = { {(28){1'b1}}, addr_bits, 2'b00 };
 endmodule
 
 // parameterized tri-state buffer module
