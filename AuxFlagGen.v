@@ -41,7 +41,7 @@ module AuxFlagGen(
 
     // round bit
     assign guard  = MBP[23];
-    assign lsb    = MBP[0];
+    assign lsb    = MAP[0];
     assign sticky = |MBP[22:0];
     assign round  = guard & ( lsb | sticky );
 
@@ -49,9 +49,9 @@ module AuxFlagGen(
     assign overflow  = ( ~EAP[9] & EAP[8] ) | EAP_HF;
 
     // flag bus
-    assign flags = { AP_ZF, AP_DNF, AP_INFF, AP_NANF,    // [11:8]
+    assign flags = { AP_ZF, AP_DNF, AP_INFF, AP_NANF,        // [11:8]
                      &MAP[22:0], round, underflow, overflow, // [ 7:4]
-                     AB_NAN, AB_INF, AB_ZERO, AB_DNF };  // [ 3:0]
+                     AB_NAN, AB_INF, AB_ZERO, AB_DNF };      // [ 3:0]
 
     DRegister #(1) EAP_ZF_reg (.clk(clk), .rst(rst), .en(1'b1), .d(~|EAP[ 7:0]), .q(EAP_ZF));
     DRegister #(1) EAP_HF_reg (.clk(clk), .rst(rst), .en(1'b1), .d( &EAP[ 7:0]), .q(EAP_HF));
