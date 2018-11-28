@@ -361,10 +361,24 @@ module imem (
     initial
     begin
         $readmemh("memfile_s.dat", rom);
-        rom[124] = 32'h0800_0040;
-        rom[125] = 32'h0800_0050; //change to appropriate address
-        rom[126] = 32'h0800_0060; //change to appropriate address
-        rom[127] = 32'h0800_0070; //change to appropriate address
+        rom[124] = 32'h0800_0040; //jump to ISR for done 1
+        rom[125] = 32'h0800_0050; //jump to ISR for done 2
+        rom[126] = 32'h0800_0060; //jump to ISR for done 3
+        rom[127] = 32'h0800_0070; //jump to ISR for done 4
+        //ISR for done 1
+        rom[64]  = 32'h8C04_080C; //lw $a0, 0x80C   #load factorial into register a0
+        rom[65]  = 32'hAC05_00F4; //sw $a0, 244($0) #dmem[61] = factorial
+        rom[66]  = 32'hF800_0008; //jepc  #jump to EPC value
+        //ISR for done 2
+        rom[80]  = 32'h8C04_0A0C; //lw $a0, 0xA0C    #load flags into register a0
+        rom[81]  = 32'h8C05_0A08; //lw $a1, 0xA08    #load product into register a1
+        rom[82]  = 32'hAC04_00F8; //sw $a0, 248($0)  #dmem[62] = flags
+        rom[83]  = 32'hAC05_00FC; //sw $a1, 252($0)  #dmem[63] = product
+        rom[84]  = 32'hF800_0008; //jepc  #jump to EPC value
+        //ISR for done 3 (no actual source for this interrupt yet)
+        rom[96]  = 32'hF800_0008; //jepc  #jump to EPC value
+        //ISR for done 4 (no actual source for this interrupt yet)
+        rom[112] = 32'hF800_0008; //jepc  #jump to EPC value
     end
     //simple rom
     assign dOut = rom[a];
