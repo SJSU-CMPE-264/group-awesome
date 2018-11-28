@@ -366,15 +366,21 @@ module imem (
         rom[126] = 32'h0800_0060; //jump to ISR for done 3
         rom[127] = 32'h0800_0070; //jump to ISR for done 4
         //ISR for done 1
-        rom[64]  = 32'h8C04_080C; //lw $a0, 0x80C   #load factorial into register a0
-        rom[65]  = 32'hAC05_00F4; //sw $a0, 244($0) #dmem[61] = factorial
-        rom[66]  = 32'hF800_0008; //jepc  #jump to EPC value
+        rom[64]  = 32'hAC04_00F0; //sw $a0, 240($0) #save register a0 in dmem[60]
+        rom[65]  = 32'h8C04_080C; //lw $a0, 0x80C   #load factorial into register a0
+        rom[66]  = 32'hAC04_00F4; //sw $a0, 244($0) #dmem[61] = factorial
+        rom[67]  = 32'h8C04_00F0; //lw $a0, 240($0) #restore register a0 from dmem[60]
+        rom[68]  = 32'hF800_0008; //jepc  #jump to EPC value
         //ISR for done 2
-        rom[80]  = 32'h8C04_0A0C; //lw $a0, 0xA0C    #load flags into register a0
-        rom[81]  = 32'h8C05_0A08; //lw $a1, 0xA08    #load product into register a1
-        rom[82]  = 32'hAC04_00F8; //sw $a0, 248($0)  #dmem[62] = flags
-        rom[83]  = 32'hAC05_00FC; //sw $a1, 252($0)  #dmem[63] = product
-        rom[84]  = 32'hF800_0008; //jepc  #jump to EPC value
+        rom[80]  = 32'hAC04_00F0; //sw $a0, 240($0)  #save register a0 in dmem[60]
+        rom[81]  = 32'hAC05_00EC; //sw $a1, 236($0)  #save register a0 in dmem[59]
+        rom[82]  = 32'h8C04_0A0C; //lw $a0, 0xA0C    #load flags into register a0
+        rom[83]  = 32'h8C05_0A08; //lw $a1, 0xA08    #load product into register a1
+        rom[84]  = 32'hAC04_00F8; //sw $a0, 248($0)  #dmem[62] = flags
+        rom[85]  = 32'hAC05_00FC; //sw $a1, 252($0)  #dmem[63] = product
+        rom[86]  = 32'h8C04_00F0; //lw $a0, 240($0)  #restore register a0 from dmem[60]
+        rom[87]  = 32'h8C05_00EC; //lw $a1, 236($0)  #restore register a1 from dmem[59]
+        rom[88]  = 32'hF800_0008; //jepc  #jump to EPC value
         //ISR for done 3 (no actual source for this interrupt yet)
         rom[96]  = 32'hF800_0008; //jepc  #jump to EPC value
         //ISR for done 4 (no actual source for this interrupt yet)
