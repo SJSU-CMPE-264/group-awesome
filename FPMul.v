@@ -337,7 +337,7 @@ parameter CTRL_RESET = 23'b0_1_00000_0_00_000000_00_00_0_0_0,
                     3'b1xx:  begin ctrl = CTRL_NAN;  ns = S8; end // nan
                     3'b01x:  begin ctrl = CTRL_INF;  ns = S8; end // inf
                     3'b001:  begin ctrl = CTRL_ZERO; ns = S8; end // zero
-                    default: begin ctrl = CTRL_WAIT; ns = S5; end // denormalized or no abnormalities
+                    default: begin ctrl = CTRL_MULT; ns = S5; end // denormalized or no abnormalities
                 endcase
             end
             S5: begin

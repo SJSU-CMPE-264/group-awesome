@@ -26,6 +26,19 @@ module test;
     endtask
 
     initial begin
+        rst=0;
+        Start=0;
+        reset;
+            A = { 1'b0, 1'b1, 30'b0}; // A = 2.0 = 0x40000000
+            B = { 1'b0, 1'b1, 30'b0}; // B = 2.0 = 0x40000000
+            Start=1;
+            tick;
+            Start=0;
+            while(Done != 1) begin
+                tick;
+            end // while(Done != 1)
+            tick;
+    /*
         A=0;
         B=0;
         rst=0;
@@ -41,7 +54,7 @@ module test;
                 tick;
             end // while(Done != 1)
             reset;
-        end // for(square = 0; square < 10; square = square + 1)
+        end // for(square = 0; square < 10; square = square + 1) */
     end
 endmodule // testi
 

@@ -55,11 +55,11 @@ module ALU #(parameter WIDTH = 32) (
     input  wire [WIDTH-1:0] b,
     output reg  [WIDTH-1:0] y
 );
-    initial assign y = {(WIDTH){1'b0}};
+    // initial assign y = {(WIDTH){1'b0}};
     always @(ctrl, a, b) begin
         case (ctrl)
-            2'b00: y = a + b; // add
-            2'b01: y = a - b; // sub
+            1'b0: y = a + b; // add
+            1'b1: y = a - b; // sub
         endcase
     end
 endmodule // ALU 
