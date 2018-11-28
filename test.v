@@ -43,4 +43,6 @@ module test;
             reset;
         end // for(square = 0; square < 10; square = square + 1)
     end
-endmodule // test
+endmodule // testi
+
+
