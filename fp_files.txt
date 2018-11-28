@@ -3,4 +3,5 @@ Mul.v
 FPMul.v
 Components.v
 AuxFlagGen.v
+test.v
 FPMul_tb.v

@@ -293,7 +293,7 @@ parameter S0  = 4'b0000,
           S7  = 4'b0111,
           S8  = 4'b1000,
           S9  = 4'b1001;
-
+// done
 parameter CTRL_RESET = 23'b0_1_00000_0_00_000000_00_00_0_0_0,
           CTRL_WAIT  = 23'b0_0_00000_0_00_000000_00_00_0_0_0,
           CTRL_LOAD  = 23'b0_0_00001_0_00_111111_00_00_0_0_0,
@@ -323,7 +323,7 @@ parameter CTRL_RESET = 23'b0_1_00000_0_00_000000_00_00_0_0_0,
         else     cs <= ns;
     end
 
-    always @(start, nan, inf, zero, mp23, mph_h, round, underflow, overflow) begin
+    always @(*) begin
         case (cs)
             S0: begin ctrl = CTRL_RESET; ns = S1; end
             S1: begin 

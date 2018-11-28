@@ -49,8 +49,8 @@ DRegister #( .WIDTH(1))
 
 assign StartCmb = we2 & InData[16];
 
-DRegister #(.WIDTH(1)) Start_reg2 (clk, rst, 1, StartCmb, RegStart);
-DRegister #(.WIDTH(1)) DelayReg (clk, rst, 1, DONE, DoneDelay);
+DRegister #(.WIDTH(1)) Start_reg2 (clk, rst, 1'b1, StartCmb, RegStart);
+DRegister #(.WIDTH(1)) DelayReg (clk, rst, 1'b1, DONE, DoneDelay);
 
 assign StartPulse = RegStart & (~DoneDelay);
 
