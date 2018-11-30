@@ -69,6 +69,12 @@ module interruptenc(
     input       status_bit, interrupt, 
     output reg  int_ack, epcwrite );
 
+    initial
+    begin
+        int_ack = 0;
+        epcwrite = 0;
+    end
+
     always @(*)
     begin 
         if (!status_bit)
@@ -156,6 +162,26 @@ module flopenr #(parameter WIDTH = 8) (
        else if (en)    q <= d;
 endmodule
 
+//synchronous reset reg
+module sync_reg #(parameter WIDTH = 1) (
+    input      clk, rst, en,
+    input      [WIDTH-1:0] d,
+    output reg [WIDTH-1:0] q
+);
+
+    initial
+    begin
+      q = 1;
+    end
+
+    always @(posedge clk)
+    begin
+      if      (rst) q = 0;
+      else if (en)  q = d;
+      else          q = q;
+    end
+endmodule
+
 // Parameterized 2-to-1 MUX
 module mux2 #(parameter WIDTH = 8) (
     input    [WIDTH-1:0]    d0, d1,
@@ -181,9 +207,9 @@ module regfile(
     input			we3,
     input	[4:0]	ra1, ra2, wa3,
     input	[31:0]	wd3,
-    output	[31:0]	rd1, rd2,
-    input	[4:0]	ra4,
-    output 	[31:0]	rd4);
+    output	[31:0]	rd1, rd2);
+    //input	[4:0]	ra4,
+    //output 	[31:0]	rd4);
 
     reg        [31:0]    rf[31:0];
     integer            n;
@@ -212,7 +238,7 @@ module regfile(
         
     assign rd1 = (ra1 != 0) ? rf[ra1[4:0]] : 0;
     assign rd2 = (ra2 != 0) ? rf[ra2[4:0]] : 0;
-    assign rd4 = (ra4 != 0) ? rf[ra4[4:0]] : 0;
+    //assign rd4 = (ra4 != 0) ? rf[ra4[4:0]] : 0;
 endmodule
 
 module multiply(input [31:0] in1, in2, output [31:0] hi, lo);
@@ -261,8 +287,8 @@ module datapath(
     input	[31:0]	instr,
     output	[31:0]	aluout, writedata,
     input	[31:0]	readdata,
-    input	[ 4:0]	dispSel,
-    output	[31:0]	dispDat,
+    //input	[ 4:0]	dispSel,
+    //output	[31:0]	dispDat,
     input			done1, done2, done3, done4, // new additions - Nick F
     // input	[31:0]	int_addr, // new additions - Nick F
     output			status_bit); // new additions - Nick F
@@ -274,6 +300,9 @@ module datapath(
     wire	[31:0]	epcout; //epc_reg -  new additions - Nick F
     wire    [31:0]  int_addr; //int_addr - new addition - Nick F
 
+    wire	[ 4:0]	dispSel;
+    wire	[31:0]	dispDat;
+
     // next PC logic
     flopr	#(32)	pcreg(clk, reset, pcnext_out, pc); // route pcnext through a 2to1 MUX and send MUX out in place of pcnext. MUX sel is called int_ack - Nick F
     mux2	#(32)	intmux(pcnext, int_addr, int_ack, pcnext_out);
@@ -284,7 +313,7 @@ module datapath(
     mux4	#(32)	pcmux(pcnextbr, {pcplus4[31:28], instr[25:0], 2'b00}, srca, epcout, {alu_jump,jump}, pcnext); //Add input 4 as epcout from EPC register - Nick F
 
     // register file logic
-    regfile			rf(clk, regwrite, instr[25:21], instr[20:16], writereg, result, srca, writedata, dispSel, dispDat);
+    regfile			rf(clk, regwrite, instr[25:21], instr[20:16], writereg, result, srca, writedata);// dispSel, dispDat);
     mux2	#(5)	wrmux(instr[20:16], instr[15:11], regdst, rs_rt);
     mux2	#(5)	jalregmux(rs_rt, 5'b11111, jalsel, writereg);
     mux2	#(32)	resmux(aluout, readdata, memtoreg, resultp1);
@@ -292,7 +321,7 @@ module datapath(
 
     // ALU logic
     mux2	#(32)	srcbmux(writedata, signimm, alusrc, srcb);
-    alu				alu(srca, srcb, alucontrol, aluout, zero); // take aluout as an input to the STATUS register - Nick F
+    alu				alu(srca, srcb, alucontrol, aluout, zero);
     
     // Multiply
     multiply		multu(srca, srcb, hireg, loreg);
@@ -306,7 +335,8 @@ module datapath(
     // Vectored interrupt
     vectored_int	v_int(int_ack, done1, done2, done3, done4, int_addr);
     flopenr	#(32)	epc_reg(clk, reset, epcwrite, pcnext, epcout);
-    flopenr	#(1)	stat_reg(clk, int_ack, status_write, 1'b1, status_bit);
+    // flopenr	#(1)	stat_reg(clk, int_ack, status_write, 1'b1, status_bit);
+    sync_reg        stat_reg(.clk(clk), .rst(int_ack), .en(status_write), .d(1'b1), .q(status_bit));
 endmodule
 
 // The MIPS (excluding the instruction and data memories)
@@ -317,8 +347,8 @@ module mips(
     output              memwrite,
     output    [31:0]    aluout, writedata,
     input     [31:0]    readdata,
-    input     [ 4:0]    dispSel,
-    output    [31:0]    dispDat,
+    //input     [ 4:0]    dispSel,
+    //output    [31:0]    dispDat,
     // input               interrupt, //for vectored interrupt
     input               done1, done2, done3, done4 //for vectored interrupt
     );
@@ -343,7 +373,8 @@ module mips(
                 jalsel, select_result, hi_lo, hi_lo_load, alu_jump,
                 int_ack, epcwrite, status_write, //for vectored interrupt
                 alucontrol, zero, pc, instr, aluout,
-                writedata, readdata, dispSel, dispDat,
+                writedata, readdata, 
+                //dispSel, dispDat,
                 done1, done2, done3, done4, //for vectored interrupt
                 // int_addr,
                 status_bit //for vectored interrupt
@@ -360,7 +391,7 @@ module imem (
     //initialize rom from memfile_s.dat
     initial
     begin
-        $readmemh("memfile_s.dat", rom);
+        $readmemh("C:\\Users\\Kevin\\Documents\\repos\\group-awesome\\single_cycle_proc\\memfile_s.dat", rom);
         rom[124] = 32'h0800_0040; //jump to ISR for done 1
         rom[125] = 32'h0800_0050; //jump to ISR for done 2
         rom[126] = 32'h0800_0060; //jump to ISR for done 3
