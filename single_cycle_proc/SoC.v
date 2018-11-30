@@ -21,8 +21,8 @@ module SoC
     faccel  fact        (clk, reset, we1, addr[3:2], write_data, fact_done_in, factdata);
     gpio    gpio        (write_data, gpi1, 32'h0, addr[3:2], we2, clk, gpiodata, gpo1, gpo2); //gpo1 and 2 not connected
     FPWrapper FPWrapper (.clk(clk), .rst(reset), .A(addr[3:2]), .WE(we3), .InData(write_data), .done_sig(fp_done_in), .OutData(FPMdata));
-    register #(1) faccel_reg ( .clk(fact_done_in), .rst(addr[31:4] == fact_addr), .en(1'b1), .in(1'b1), .out(faccel_done) );
-    register #(1) FP_reg ( .clk(fp_done_in), .rst(addr[31:4] == FP_addr), .en(1'b1), .in(1'b1), .out(FPM_done) );
+    register #(1) faccel_reg ( .clk(fact_done_in), .rst((addr[31:4] == fact_addr) | reset), .en(1'b1), .in(1'b1), .out(faccel_done) );
+    register #(1) FP_reg ( .clk(fp_done_in), .rst((addr[31:4] == FP_addr) | reset), .en(1'b1), .in(1'b1), .out(FPM_done) );
     mux4 #(32) mux      (FPMdata, memdata, factdata, gpiodata, out_mux_sel, data_out);
 
 

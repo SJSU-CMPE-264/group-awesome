@@ -15,50 +15,51 @@
 // MIPS Top-level Module (including the memories, clock,
 // and the display module for prototyping)
 module mips_top(
-    input    Clk, reset, pb,
-    output    memwrite, wem, we1, we2, we3,
-    output    [ 7:0]     LEDSEL,
-    output     [ 7:0]    LEDOUT,
-    input    [ 7:0]    switches,
-    input   [7:0] gpi1,
-    output    sinkBit
+    input    Clk, reset,// pb,
+    output    memwrite,// wem, we1, we2, we3,
+    //output    [ 7:0]     LEDSEL,
+    //output     [ 7:0]    LEDOUT,
+    //input    [ 7:0]    switches,
+    input   [7:0] gpi1
+    //output    sinkBit
     
     );
 
-    wire    [31:0]     pc, instr, dataadr, writedata, readdata, dispDat;
-    wire    clksec, clk_db, faccel_done, FPM_done;
-    reg     [ 15:0]    reg_hex;
+    wire    [31:0]     pc, instr, dataadr, writedata, readdata;// dispDat;
+    //wire    clksec, clk_db, 
+    wire    faccel_done, FPM_done;
+    //reg     [ 15:0]    reg_hex;
     
-    wire Clk_5KHz;
+    // wire Clk_5KHz;
 
     // Clock (1 second) to slow down the running of the instructions
     //Clk_gen top_Clk(.Clk50MHz(Clk), .reset(reset), .Clksec(Clksec));
 
-    Clk_gen top_Clk(
-        .Clk100MHz(Clk),
-        .Rst(reset),
-        .Clk_sec(Clksec),
-        .Clk_5KHz(Clk_5KHz)
-        );
+    // Clk_gen top_Clk(
+    //     .Clk100MHz(Clk),
+    //     .Rst(reset),
+    //     .Clk_sec(Clksec),
+    //     .Clk_5KHz(Clk_5KHz)
+    //     );
         
-    debounce db (Clk_5KHz, pb, Clk_db);
+    // debounce db (Clk_5KHz, pb, Clk_db);
       
     // Instantiate processor and memories    
-    mips     mips       (clk_db, reset, pc, instr, memwrite, 
+    mips     mips       (clk, reset, pc, instr, memwrite, 
                         dataadr, writedata, readdata, 
-                        switches[4:0], dispDat, 
+                        //switches[4:0], dispDat, 
                         faccel_done, FPM_done, 1'b0, 1'b0);
     imem     imem       (pc[8:2], instr);
     //SoC
     SoC     soc ( 
                 .addr(dataadr), .write_data(writedata), .gpi1(gpi1),
-                .WE(memwrite), .reset(reset), .clk(clk_db), .data_out(readdata),
+                .WE(memwrite), .reset(reset), .clk(clk), .data_out(readdata),
                 .faccel_done(faccel_done), .FPM_done(FPM_done) 
                 );
     
 //=======================================================================================================================
 //=======================================================================================================================
-
+/*
     wire [7:0] digit0;
     wire [7:0] digit1;
     wire [7:0] digit2;
@@ -93,7 +94,7 @@ module mips_top(
         LEDSEL        
         );
     
-/*
+
     7:5 = 000 : Display LSW of register selected by DSW 4:0
     7:5 = 001 : Display MSW of register selected by DSW 4:0
     7:5 = 010 : Display LSW of instr
@@ -102,8 +103,9 @@ module mips_top(
     7:5 = 101 : Display MSW of dataaddr
     7:5 = 110 : Display LSW of writedata
     7:5 = 111 : Display MSW of writedata
-*/    
-    
+*/ 
+   
+/*    
     always @ (posedge Clk)
     begin
         case ({switches[7],switches[6], switches[5]})
@@ -121,4 +123,5 @@ module mips_top(
     //sink unused bit(s) to knock down the number of warning messages
     assign sinkBit = (pc > 0) ^ (instr > 0) ^ (dataadr > 0) ^ (writedata > 0) ^
                      (readdata > 0) ^ (dispDat > 0);
+*/
 endmodule
