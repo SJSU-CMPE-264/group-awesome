@@ -23,15 +23,15 @@ endmodule // TriState
 // -----------------------------------------------------
 
 module DRegister #(parameter WIDTH = 32) (
-    input  wire             clk,
-    input  wire             rst,
+    input  wire             Clk,
+    input  wire             Rst,
     input  wire             en,
     input  wire [WIDTH-1:0] d,
     output reg  [WIDTH-1:0] q
 );
     initial q = 0;
-    always @(posedge clk, posedge rst) begin
-        if      (rst) q <= 0;
+    always @(posedge Clk, posedge Rst) begin
+        if      (Rst) q <= 0;
         else if (en)  q <= d;
         else          q <= q;
     end

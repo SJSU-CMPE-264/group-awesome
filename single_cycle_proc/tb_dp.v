@@ -4,7 +4,7 @@
 
 module tb_dp();
 
-reg        clk, reset, memtoreg, pcsrc, alusrc, regdst, regwrite, jump,
+reg        Clk, reset, memtoreg, pcsrc, alusrc, regdst, regwrite, jump,
            jalsel, select_result, hi_lo, hi_lo_load, alu_jump;
 reg [2:0] alucontrol;
 reg    [31:0]    instr, readdata;
@@ -30,7 +30,7 @@ reg [14:0] ctrl;
 reg dummy;
 
 datapath DP(
-    clk, reset, memtoreg, pcsrc, alusrc, regdst, regwrite, jump,
+    Clk, reset, memtoreg, pcsrc, alusrc, regdst, regwrite, jump,
     jalsel, select_result, hi_lo, hi_lo_load, alu_jump,
     alucontrol,
     zero,
@@ -43,8 +43,8 @@ datapath DP(
 );
 
 
-task runclk;
-    begin clk = 0; #5; clk = 1; #5; end endtask
+task runClk;
+    begin Clk = 0; #5; Clk = 1; #5; end endtask
     
 always@(ctrl)
 begin
@@ -53,106 +53,106 @@ end
     
 initial
 begin
-    clk = 1;
+    Clk = 1;
     reset = 1;
     instr = 32'b0;
     ctrl = 15'b0;
-    runclk;
+    runClk;
     reset = 0;
     
 //    instr = jalInstr;
 //    ctrl = jalControls;
-//    runclk;
+//    runClk;
 //    if (pc != 32'h60) $display("jal error");
     
     instr = addiInstr;  //30 into $24
     ctrl = addiControls;
-    runclk;
+    runClk;
     if (writedata != 32'd30) $display("addi error to $24");
     
     instr = {addiInstr[31:21], 5'b11010, addiInstr[15:1], 1'b1}; //31 into $13
-    runclk;
+    runClk;
     if (writedata != 32'd31) $display("addi error to $26");
  
     instr = jalInstr;
     ctrl = jalControls;
-    runclk;
+    runClk;
     if (pc != 32'h60) $display("jal error");
 
     
     instr = addInstr;
     ctrl = addControls;
-    runclk;
+    runClk;
     if (aluout != 32'd61) $display("add error, does not equal 61.");
     
     instr = subInstr;
     ctrl = subControls;
-    runclk;
+    runClk;
     if (aluout != -1) $display("subtract error.");
     
     instr = andInstr;
     ctrl = andControls;
-    runclk;
+    runClk;
     if (aluout != 30) $display("and error.");
     
     instr = orInstr;
     ctrl = orControls;
-    runclk;
+    runClk;
     if (aluout != 31) $display("or error.");
     
     instr = sltInstr;
     ctrl = sltControls;
-    runclk;
+    runClk;
     if (aluout != 1) $display("slt error.");
     
     instr = multuInstr;
     ctrl = multuControls;
-    runclk;
+    runClk;
     
     
     
     
     instr = mfloInstr;
     ctrl = mfloControls;
-    runclk;
+    runClk;
     
     instr = addiZero;
     ctrl = addiControls;
-    runclk;
+    runClk;
     if (writedata != 32'd930) $display("multu or mflo error.");
     
     instr = mfhiInstr;
     ctrl = mfhiControls;
-    runclk;
+    runClk;
     if (writedata != 0) $display("multu or mfhi error.");
     
     instr = jrInstr;
     ctrl = jrControls;
-    runclk;
+    runClk;
     if (pc != 32'hc) $display("jr error. %H", pc);
     
     instr = swInstr;
     ctrl = swControls;
-    runclk;
+    runClk;
     if (writedata != 31) $display("sw data error.");
     if (aluout != 0) $display("sw address error.");
     
     readdata = 32'd50;
     instr = lwInstr;
     ctrl = lwControls;
-    runclk;
+    runClk;
 //    if (writedata != 31) $display("lw data error.");
     if (aluout != 0) $display("lw address error.");
     
     instr = beqInstr;
     ctrl = beqControls;
-    runclk;
+    runClk;
     if (zero != 1) $display ("beq error.");
     
     
     instr = jInstr;
     ctrl = jControls;
-    runclk;
+    runClk;
     if (pc != 32'b10010100) $display ("jump error.");
     
     

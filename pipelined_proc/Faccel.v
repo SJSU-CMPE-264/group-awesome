@@ -1,5 +1,5 @@
 module faccel
-(input clk, rst, we, input [1:0] a, input [3:0] d, output [31:0] out);
+(input Clk, Rst, we, input [1:0] a, input [3:0] d, output [31:0] out);
 
     wire we1, we2, go, gopulse, done, status;
     wire [1:0] rdsel;
@@ -9,11 +9,11 @@ module faccel
     assign gopulse = we & d[0];
 
     adecoder        AD (we, a, we1, we2, rdsel);
-    register  #(4)  N  (clk, rst, we1, d, n);
-    register  #(1)  G  (clk, rst, we2, d[0], go);
-    Factorial #(4)  F  (clk, rst, gopulse, n, done, nf);
-    register  #(32) NF (clk, rst, done, nf, nfsig);
-    rsreg2          S  (clk, rst, gopulse, done, status);
+    register  #(4)  N  (Clk, Rst, we1, d, n);
+    register  #(1)  G  (Clk, Rst, we2, d[0], go);
+    Factorial #(4)  F  (Clk, Rst, gopulse, n, done, nf);
+    register  #(32) NF (Clk, Rst, done, nf, nfsig);
+    rsreg2          S  (Clk, Rst, gopulse, done, status);
     mux4      #(32) M  ({27'b0, n}, {30'b0, go}, {30'b0, status}, nfsig, rdsel, out);
 
 endmodule
@@ -35,11 +35,11 @@ module adecoder
 endmodule
 
 module rsreg2
-(input clk, rst, r, s, output reg out);
+(input Clk, Rst, r, s, output reg out);
 
-    always @ (posedge clk, posedge rst)
+    always @ (posedge Clk, posedge Rst)
     begin
-        if (rst) out <= 0;
+        if (Rst) out <= 0;
         else if (r) out <= 0;
         else if (s) out <= 1;
         else out <= out;

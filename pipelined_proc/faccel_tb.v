@@ -1,6 +1,6 @@
 module faccel_tb;
 
-    reg clk, rst, wel;
+    reg Clk, Rst, wel;
     reg [1:0] a;
     reg [3:0] d;
     wire [31:0] out;
@@ -8,10 +8,10 @@ module faccel_tb;
     reg [6:0] ctrl;
     integer exp;
     
-    faccel DUT (clk, rst, wel, a, d, out);
+    faccel DUT (Clk, Rst, wel, a, d, out);
     
-    task tick; begin #5; clk = 1; #5; clk = 0; end endtask
-    task rest; begin #5; rst = 1; #5; rst = 0; end endtask
+    task tick; begin #5; Clk = 1; #5; Clk = 0; end endtask
+    task rest; begin #5; Rst = 1; #5; Rst = 0; end endtask
     
     function [31:0] fact;
     input [3:0] n;
@@ -38,7 +38,7 @@ module faccel_tb;
     
     initial
     begin
-        clk = 0; rst = 0;
+        Clk = 0; Rst = 0;
         wel = 0; a = 0; d = 0;
         exp = fact(5);
         rest;

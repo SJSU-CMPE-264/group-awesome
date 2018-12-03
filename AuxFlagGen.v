@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 
-// Aux Flag Generation for FPMul
+// Aux Flag Generation for FPMUL
 module AuxFlagGen(
-    input  wire        clk,
-    input  wire        rst,
+    input  wire        Clk,
+    input  wire        Rst,
     input  wire [ 9:0] EAP,
     input  wire [ 7:0] EB,
     input  wire [22:0] MAP,
@@ -53,14 +53,14 @@ module AuxFlagGen(
                      &MAP[22:0], round, underflow, overflow, // [ 7:4]
                      AB_NAN, AB_INF, AB_ZERO, AB_DNF };      // [ 3:0]
 
-    DRegister #(1) EAP_ZF_reg (.clk(clk), .rst(rst), .en(1'b1), .d(~|EAP[ 7:0]), .q(EAP_ZF));
-    DRegister #(1) EAP_HF_reg (.clk(clk), .rst(rst), .en(1'b1), .d( &EAP[ 7:0]), .q(EAP_HF));
-    DRegister #(1) MAP_ZF_reg (.clk(clk), .rst(rst), .en(1'b1), .d(~|MAP[22:0]), .q(MAP_ZF));
-    DRegister #(1) MAP_HF_reg (.clk(clk), .rst(rst), .en(1'b1), .d( &MAP[22:0]), .q(MAP_HF));
-    DRegister #(1) EB_ZF_reg  (.clk(clk), .rst(rst), .en(1'b1), .d( ~|EB[ 7:0]), .q(EB_ZF ));
-    DRegister #(1) EB_HF_reg  (.clk(clk), .rst(rst), .en(1'b1), .d(  &EB[ 7:0]), .q(EB_HF ));
-    DRegister #(1) MB_ZF_reg  (.clk(clk), .rst(rst), .en(1'b1), .d(~|MBP[22:0]), .q(MBP_ZF));
-    DRegister #(1) MB_HF_reg  (.clk(clk), .rst(rst), .en(1'b1), .d( &MBP[22:0]), .q(MBP_HF));
+    DRegister #(1) EAP_ZF_reg (.Clk(Clk), .Rst(Rst), .en(1'b1), .d(~|EAP[ 7:0]), .q(EAP_ZF));
+    DRegister #(1) EAP_HF_reg (.Clk(Clk), .Rst(Rst), .en(1'b1), .d( &EAP[ 7:0]), .q(EAP_HF));
+    DRegister #(1) MAP_ZF_reg (.Clk(Clk), .Rst(Rst), .en(1'b1), .d(~|MAP[22:0]), .q(MAP_ZF));
+    DRegister #(1) MAP_HF_reg (.Clk(Clk), .Rst(Rst), .en(1'b1), .d( &MAP[22:0]), .q(MAP_HF));
+    DRegister #(1) EB_ZF_reg  (.Clk(Clk), .Rst(Rst), .en(1'b1), .d( ~|EB[ 7:0]), .q(EB_ZF ));
+    DRegister #(1) EB_HF_reg  (.Clk(Clk), .Rst(Rst), .en(1'b1), .d(  &EB[ 7:0]), .q(EB_HF ));
+    DRegister #(1) MB_ZF_reg  (.Clk(Clk), .Rst(Rst), .en(1'b1), .d(~|MBP[22:0]), .q(MBP_ZF));
+    DRegister #(1) MB_HF_reg  (.Clk(Clk), .Rst(Rst), .en(1'b1), .d( &MBP[22:0]), .q(MBP_HF));
 
     assign AP_ZF   = EAP_ZF &  MAP_ZF;
     assign AP_DNF  = EAP_ZF & ~MAP_ZF;
@@ -71,16 +71,16 @@ module AuxFlagGen(
     assign B_INFF  = EB_HF  &  MBP_ZF;
     assign B_NANF  = EB_HF  & ~MBP_ZF;
 
-    DRegister #(1) AB_NAN_reg  ( .clk(clk), .rst(rst), .en(1'b1), 
+    DRegister #(1) AB_NAN_reg  ( .Clk(Clk), .Rst(Rst), .en(1'b1), 
                                  .d( AP_NANF | B_NANF | (B_ZF & AP_INFF) | (AP_ZF & B_INFF) ), 
                                  .q(AB_NAN) );
-    DRegister #(1) AB_INF_reg  ( .clk(clk), .rst(rst), .en(1'b1),
+    DRegister #(1) AB_INF_reg  ( .Clk(Clk), .Rst(Rst), .en(1'b1),
                                  .d( (AP_INFF & ~(B_NANF | B_ZF)) | (B_INFF & ~(AP_NANF | AP_ZF)) ), 
                                  .q(AB_INF) );
-    DRegister #(1) AB_ZERO_reg ( .clk(clk), .rst(rst), .en(1'b1),
+    DRegister #(1) AB_ZERO_reg ( .Clk(Clk), .Rst(Rst), .en(1'b1),
                                  .d( (AP_ZF & ~(B_NANF | B_INFF)) | (B_ZF & ~(AP_NANF | AP_INFF)) ), 
                                  .q(AB_ZERO) );
-    DRegister #(1) AB_DNF_reg  ( .clk(clk), .rst(rst), .en(1'b1),
+    DRegister #(1) AB_DNF_reg  ( .Clk(Clk), .Rst(Rst), .en(1'b1),
                                  .d( AP_DNF | B_DNF ), 
                                  .q(AB_DNF) );
 endmodule

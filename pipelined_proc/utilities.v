@@ -1,45 +1,45 @@
 `timescale 1ns / 1ps
 
-module clk_gen(input clk100MHz, input rst, output reg clk_sec, output reg clk_5KHz);
+module Clk_gen(input Clk100MHz, input Rst, output reg Clk_sec, output reg Clk_5KHz);
 
 integer count, count1;
 
-always@(posedge clk100MHz)
+always@(posedge Clk100MHz)
     begin
-        if(rst)
+        if(Rst)
         begin
             count = 0;
             count1 = 0;
-            clk_sec = 0;
-            clk_5KHz =0;
+            Clk_sec = 0;
+            Clk_5KHz =0;
         end
         else
         begin
             if(count == 5) /* 50e6 x 10ns = 1/2sec, toggle twice for 1sec */
             //above divided by 10 million, make sure to replace for fpga test
             begin
-            clk_sec = ~clk_sec;
+            Clk_sec = ~Clk_sec;
             count = 0;
             end
             if(count1 == 10000)
             begin
-            clk_5KHz = ~clk_5KHz;
+            Clk_5KHz = ~Clk_5KHz;
             count1 = 0;
             end
             count = count + 1;
             count1 = count1 + 1;
         end
     end
-endmodule // end clk_gen
+endmodule // end Clk_gen
 
 module debounce
-(input clk, pb, output reg pb_debounced);
+(input Clk, pb, output reg pb_debounced);
 
     localparam shift_max = (2**16)-1;
     
     reg [15:0] shift;
     
-    always @ (posedge clk)
+    always @ (posedge Clk)
     begin
         shift[14:0] <= shift[15:1];
         shift[15] <= pb;
@@ -95,8 +95,8 @@ end
 endmodule
 
 module LED_MUX (
-    input wire clk,
-    input wire rst,
+    input wire Clk,
+    input wire Rst,
     input wire [7:0] LED0, // leftmost digit
     input wire [7:0] LED1,
     input wire [7:0] LED2,
@@ -114,9 +114,9 @@ reg [15:0] led_ctrl;
 
 assign {LEDOUT, LEDSEL} = led_ctrl;
 
-always@(posedge clk)
+always@(posedge Clk)
 begin
-    index <= (rst) ? 3'd0 : (index + 3'd1);
+    index <= (Rst) ? 3'd0 : (index + 3'd1);
 end    
 
 always @(index, LED0, LED1, LED2, LED3, LED4, LED5, LED6, LED7)

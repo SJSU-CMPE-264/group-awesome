@@ -21,7 +21,7 @@
 
 module tb_cudp();
 
-reg    clk, reset, pb;
+reg    Clk, reset, pb;
 wire    memwrite, wem, we1, we2, we3;
 wire    [ 7:0]     LEDSEL;
 wire     [ 7:0]    LEDOUT;
@@ -29,28 +29,28 @@ reg    [ 7:0]    switches;
 reg     [7:0]   gpi1;
 wire    sinkBit;
 
-mips_top DUT1(clk, reset, pb, memwrite, wem, we1, we2, we3, LEDSEL, LEDOUT, switches, gpi1, sinkBit);
+mips_top DUT1(Clk, reset, pb, memwrite, wem, we1, we2, we3, LEDSEL, LEDOUT, switches, gpi1, sinkBit);
     
-task runclk;
-    begin clk = 0; #5; clk = 1; #5; end endtask
+task runClk;
+    begin Clk = 0; #5; Clk = 1; #5; end endtask
     
     integer stop = 0;
     
   // initialize test
 initial
   begin
-  clk = 0;
+  Clk = 0;
     reset = 1;
-    runclk;
+    runClk;
     # 22;
     reset = 0;
     #5;
-//    runclk;runclk;runclk;runclk;runclk;runclk;runclk;runclk;runclk;
-//    runclk;runclk;runclk;runclk;runclk;runclk;runclk;runclk;runclk;
-//    runclk;runclk;runclk;runclk;runclk;runclk;runclk;runclk;runclk;
+//    runClk;runClk;runClk;runClk;runClk;runClk;runClk;runClk;runClk;
+//    runClk;runClk;runClk;runClk;runClk;runClk;runClk;runClk;runClk;
+//    runClk;runClk;runClk;runClk;runClk;runClk;runClk;runClk;runClk;
     while (DUT1.mips.dp.pcreg.q != 32'h0000_0058 && stop < 1000)
     begin
-        runclk;
+        runClk;
         stop = stop + 1;
     end
     
@@ -64,11 +64,11 @@ initial
 // generate clock to sequence tests
 //always
 //  begin
-//    clk <= 1; # 5; clk <= 0; # 5;
+//    Clk <= 1; # 5; Clk <= 0; # 5;
 //  end
 
 //// check that 7 gets written to address 84
-//always@(negedge clk)
+//always@(negedge Clk)
 //  begin
 //    if(memwrite)
 //    begin

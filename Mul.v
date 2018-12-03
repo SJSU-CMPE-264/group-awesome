@@ -2,8 +2,8 @@
 
 // 32-bit 2-stage pipelined multiplier
 module Mul(
-    input  wire        clk, 
-    input  wire        rst,
+    input  wire        Clk, 
+    input  wire        Rst,
     input  wire [31:0] a, 
     input  wire [31:0] b,
     output wire [63:0] y
@@ -14,8 +14,8 @@ module Mul(
     wire [63:0] q1[0:15], q2[0:15], q3[0:7], q4[0:3], q5[0:1];
 
     // Stage 1
-    DRegister   u0 ( .clk(clk), .rst(rst), .en(1'b1), .d(a), .q(q0[0]) );
-    DRegister   u1 ( .clk(clk), .rst(rst), .en(1'b1), .d(b), .q(q0[1]) );
+    DRegister   u0 ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(a), .q(q0[0]) );
+    DRegister   u1 ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(b), .q(q0[1]) );
 
     assign PP[ 0] = q0[0] & { (32){ q0[1][ 0] } };
     assign PP[ 1] = q0[0] & { (32){ q0[1][ 1] } };
@@ -68,22 +68,22 @@ module Mul(
     CLA64 u17 ( .A({  2'b0, PP[30], 30'b0 }), .B({  1'b0, PP[31], 31'b0 }), .cin(1'b0), .Y(q1[15]), .cout(DONT_USE) );
 
     // Stage 2
-    DRegister #(64)  q2_0  ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[ 0]), .q(q2[ 0]) );
-    DRegister #(64)  q2_1  ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[ 1]), .q(q2[ 1]) );
-    DRegister #(64)  q2_2  ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[ 2]), .q(q2[ 2]) );
-    DRegister #(64)  q2_3  ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[ 3]), .q(q2[ 3]) );
-    DRegister #(64)  q2_4  ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[ 4]), .q(q2[ 4]) );
-    DRegister #(64)  q2_5  ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[ 5]), .q(q2[ 5]) );
-    DRegister #(64)  q2_6  ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[ 6]), .q(q2[ 6]) );
-    DRegister #(64)  q2_7  ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[ 7]), .q(q2[ 7]) );
-    DRegister #(64)  q2_8  ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[ 8]), .q(q2[ 8]) );
-    DRegister #(64)  q2_9  ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[ 9]), .q(q2[ 9]) );
-    DRegister #(64)  q2_10 ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[10]), .q(q2[10]) );
-    DRegister #(64)  q2_11 ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[11]), .q(q2[11]) );
-    DRegister #(64)  q2_12 ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[12]), .q(q2[12]) );
-    DRegister #(64)  q2_13 ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[13]), .q(q2[13]) );
-    DRegister #(64)  q2_14 ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[14]), .q(q2[14]) );
-    DRegister #(64)  q2_15 ( .clk(clk), .rst(rst), .en(1'b1), .d(q1[15]), .q(q2[15]) );
+    DRegister #(64)  q2_0  ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[ 0]), .q(q2[ 0]) );
+    DRegister #(64)  q2_1  ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[ 1]), .q(q2[ 1]) );
+    DRegister #(64)  q2_2  ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[ 2]), .q(q2[ 2]) );
+    DRegister #(64)  q2_3  ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[ 3]), .q(q2[ 3]) );
+    DRegister #(64)  q2_4  ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[ 4]), .q(q2[ 4]) );
+    DRegister #(64)  q2_5  ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[ 5]), .q(q2[ 5]) );
+    DRegister #(64)  q2_6  ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[ 6]), .q(q2[ 6]) );
+    DRegister #(64)  q2_7  ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[ 7]), .q(q2[ 7]) );
+    DRegister #(64)  q2_8  ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[ 8]), .q(q2[ 8]) );
+    DRegister #(64)  q2_9  ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[ 9]), .q(q2[ 9]) );
+    DRegister #(64)  q2_10 ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[10]), .q(q2[10]) );
+    DRegister #(64)  q2_11 ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[11]), .q(q2[11]) );
+    DRegister #(64)  q2_12 ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[12]), .q(q2[12]) );
+    DRegister #(64)  q2_13 ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[13]), .q(q2[13]) );
+    DRegister #(64)  q2_14 ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[14]), .q(q2[14]) );
+    DRegister #(64)  q2_15 ( .Clk(Clk), .Rst(Rst), .en(1'b1), .d(q1[15]), .q(q2[15]) );
 
     CLA64 u18 ( .A(q2[ 0]), .B(q2[ 1]), .cin(1'b0), .Y(q3[0]), .cout(DONT_USE) );
     CLA64 u19 ( .A(q2[ 2]), .B(q2[ 3]), .cin(1'b0), .Y(q3[1]), .cout(DONT_USE) );

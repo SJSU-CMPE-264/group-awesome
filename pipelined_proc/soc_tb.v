@@ -1,17 +1,17 @@
 module soc_tb;
 
-    reg clk, rst;
+    reg Clk, Rst;
     reg [31:0] gpi1, gpi2;
     wire [31:0] gpo1, gpo2;
     
-    mips_top DUT (clk, rst, gpi1, gpi2, gpo1, gpo2);
+    mips_top DUT (Clk, Rst, gpi1, gpi2, gpo1, gpo2);
     
-    task tick; begin #5; clk = 1; #5; clk = 0; end endtask
-    task rest; begin #5; rst = 1; #5; rst = 0; end endtask
+    task tick; begin #5; Clk = 1; #5; Clk = 0; end endtask
+    task rest; begin #5; Rst = 1; #5; Rst = 0; end endtask
     
     initial
     begin
-        clk = 0; rst = 0; gpi1 = 32'h0000_0006; gpi2 = 32'h0000_0007;
+        Clk = 0; Rst = 0; gpi1 = 32'h0000_0006; gpi2 = 32'h0000_0007;
         rest;
         tick; if (DUT.mips.dp.rf.rf[16] != 32'h0000_0005) $display ("ADDI Fail");
         tick; if (DUT.dmem.ram[1] != 32'h0000_0005)       $display ("SW Fail");

@@ -15,7 +15,7 @@
 // MIPS Top-level Module (including the memories, clock,
 // and the display module for prototyping)
 module mips_top(
-    input    clk, reset, pb,
+    input    Clk, reset, pb,
     output    memwrite, wem, we1, we2, we3,
     output    [ 7:0]     LEDSEL,
     output     [ 7:0]    LEDOUT,
@@ -26,32 +26,32 @@ module mips_top(
     );
 
     wire    [31:0]     pc, instr, dataadr, writedata, readdata, dispDat, memdata, factdata, gpiodata, FPMdata, gpo1, gpo2;
-    wire     clksec, clk_db;
+    wire     Clksec, Clk_db;
     wire    [1:0] rdsel;
     reg        [ 15:0]     reg_hex;
     
-    wire clk_5KHz;
+    wire Clk_5KHz;
 
     // Clock (1 second) to slow down the running of the instructions
-    //clk_gen top_clk(.clk50MHz(clk), .reset(reset), .clksec(clksec));
+    //Clk_gen top_Clk(.Clk50MHz(Clk), .reset(reset), .Clksec(Clksec));
 
-    clk_gen top_clk(
-        .clk100MHz(clk),
-        .rst(reset),
-        .clk_sec(clksec),
-        .clk_5KHz(clk_5KHz)
+    Clk_gen top_Clk(
+        .Clk100MHz(Clk),
+        .Rst(reset),
+        .Clk_sec(Clksec),
+        .Clk_5KHz(Clk_5KHz)
         );
         
-    debounce db (clk_5KHz, pb, clk_db);
+    debounce db (Clk_5KHz, pb, Clk_db);
       
     // Instantiate processor and memories    
-    mips     mips       (clk_db, reset, pc, instr, memwrite, dataadr, writedata, readdata, switches[4:0], dispDat);
+    mips     mips       (Clk_db, reset, pc, instr, memwrite, dataadr, writedata, readdata, switches[4:0], dispDat);
     imem     imem       (pc[7:2], instr);
     decoder dec         (memwrite, dataadr, wem, we1, we2, we3, rdsel);
-    dmem    dmem        (clk_db, wem, dataadr, writedata, memdata);
-    faccel  fact        (clk_db, reset, we1, dataadr[3:2], writedata, factdata);
-    gpio    gpio        (writedata, gpi1, 32'h0, dataadr[3:2], we2, clk_db, gpiodata, gpo1, gpo2);
-    FPWrapper FPWrapper (.clk(clk_db), .rst(reset), .A(dataadr[3:2]), .WE(we3), .InData(writedata), .OutData(FPMdata));
+    dmem    dmem        (Clk_db, wem, dataadr, writedata, memdata);
+    faccel  fact        (Clk_db, reset, we1, dataadr[3:2], writedata, factdata);
+    gpio    gpio        (writedata, gpi1, 32'h0, dataadr[3:2], we2, Clk_db, gpiodata, gpo1, gpo2);
+    FPWrapper FPWrapper (.Clk(Clk_db), .Rst(reset), .A(dataadr[3:2]), .WE(we3), .InData(writedata), .OutData(FPMdata));
     mux4 #(32) mux      (FPMdata, memdata, factdata, gpiodata, rdsel, readdata);
     
 //=======================================================================================================================
@@ -77,7 +77,7 @@ module mips_top(
     bcd_to_7seg bcd7 (reg_hex[3:0], digit7);
    
     LED_MUX disp_unit (
-        clk_5KHz,
+        Clk_5KHz,
         reset,
         digit0,
         digit1,
@@ -102,7 +102,7 @@ module mips_top(
     7:5 = 111 : Display MSW of writedata
 */    
     
-    always @ (posedge clk)
+    always @ (posedge Clk)
     begin
         case ({switches[7],switches[6], switches[5]})
             3'b000:    reg_hex = dispDat[15:0];

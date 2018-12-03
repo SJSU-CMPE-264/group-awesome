@@ -1,16 +1,16 @@
 module test;
-    reg         clk, rst, Start;
+    reg         Clk, Rst, Start;
     reg [31:0]  A, B;
-    wire        Done, OF, UF, NanF, InfF, DNF, ZF;
+    wire        Done, OF, UF, NaNF, InfF, DNF, ZF;
     wire [31:0] P;
 
-    FPMul DUT(clk, rst, Start, A, B, Done, P, OF, UF, NanF, InfF, DNF, ZF);
+    FPMUL DUT(Clk, Rst, Start, A, B, Done, P, OF, UF, NaNF, InfF, DNF, ZF);
     integer square;
 
     task tick;
         begin
-            #5 clk = 1;
-            #5 clk = 0;
+            #5 Clk = 1;
+            #5 Clk = 0;
         end
     endtask
 
@@ -18,30 +18,30 @@ module test;
         begin 
             A=0;
             B=0;
-            rst = 1; 
+            Rst = 1; 
             tick;
-            rst = 0;
+            Rst = 0;
             tick; 
         end 
     endtask
 
     initial begin
-        rst=0;
+        Rst=0;
         Start=0;
         reset;
-            A = { 1'b0, 1'b1, 30'b0}; // A = 2.0 = 0x40000000
-            B = { 1'b0, 1'b1, 30'b0}; // B = 2.0 = 0x40000000
-            Start=1;
+        A = { 1'b0, 1'b1, 30'b0}; // A = 2.0 = 0x40000000
+        B = { 1'b0, 1'b1, 30'b0}; // B = 2.0 = 0x40000000
+        Start=1;
+        tick;
+        Start=0;
+        while(Done != 1) begin
             tick;
-            Start=0;
-            while(Done != 1) begin
-                tick;
-            end // while(Done != 1)
-            tick;
-    /*
+        end // while(Done != 1)
+        tick;
+        
         A=0;
         B=0;
-        rst=0;
+        Rst=0;
         Start=0;
         reset;
         for(square = 0; square < 10; square = square + 1) begin

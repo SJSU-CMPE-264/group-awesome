@@ -1,5 +1,5 @@
 module CU
-(input clk, rst, go, greater, output reg cld, cen, s1, ren, ben, done);
+(input Clk, Rst, go, greater, output reg cld, cen, s1, ren, ben, done);
 
     reg [2:0] NS, CS;
     reg [5:0] ctrl;
@@ -27,8 +27,8 @@ module CU
         endcase
         end
         
-    always @ (posedge clk, posedge rst)
-        CS = rst ? Idle : NS;
+    always @ (posedge Clk, posedge Rst)
+        CS = Rst ? Idle : NS;
         
     always @ (ctrl)
         {cld, cen, s1, ren, ben, done} = ctrl;

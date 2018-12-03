@@ -1,8 +1,8 @@
 `timescale 1ns / 1ps
 
 module FPWrapper(
-	input clk,
-	input rst,
+	input Clk,
+	input Rst,
 input [1:0] A,
 	input WE,
 	input [31:0] InData,
@@ -34,51 +34,51 @@ Mux #( .INPUTS(4), .WIDTH(32))
 
 DRegister #( .WIDTH(32))
 	OpA_reg_inst(
-		.clk(clk), .rst(rst), .en(we0), .d(InData), .q(OpA)
+		.Clk(Clk), .Rst(Rst), .en(we0), .d(InData), .q(OpA)
 	);
 
 DRegister #( .WIDTH(32))
 	OpB_reg_inst(
-		.clk(clk), .rst(rst), .en(we1), .d(InData), .q(OpB)
+		.Clk(Clk), .Rst(Rst), .en(we1), .d(InData), .q(OpB)
 	);
-//***Start signal to FPMul
+//***Start signal to FPMUL
 DRegister #( .WIDTH(1))
 	Start_reg_inst(
-		.clk(clk), .rst(rst), .en(we2), .d(InData[16]), .q(Start)
+		.Clk(Clk), .Rst(Rst), .en(we2), .d(InData[16]), .q(Start)
 	);
 
 assign StartCmb = we2 & InData[16];
 
-DRegister #(.WIDTH(1)) Start_reg2 (clk, rst, 1'b1, StartCmb, RegStart);
-DRegister #(.WIDTH(1)) DelayReg (clk, rst, 1'b1, DONE, DoneDelay);
+DRegister #(.WIDTH(1)) Start_reg2 (Clk, Rst, 1'b1, StartCmb, RegStart);
+DRegister #(.WIDTH(1)) DelayReg (Clk, Rst, 1'b1, DONE, DoneDelay);
 
 assign StartPulse = RegStart & (~DoneDelay);
 
 //*****
 
-FPMul FPMul_module(clk, rst, StartPulse, OpA, OpB, DONE, P, OF, UF, NANF, INFF, DNF, ZF);
+FPMUL FPMUL_module(Clk, Rst, StartPulse, OpA, OpB, DONE, P, OF, UF, NANF, INFF, DNF, ZF);
 
 DRegister #( .WIDTH(38))
 	FPM_out_reg_inst(
-		.clk(clk), .rst(rst), .en(DONE), .d({P,OF,UF,NANF,INFF,DNF,ZF}), .q({ResP, ResOF, ResUF, ResNANF, ResINFF, ResDNF, ResZF})
+		.Clk(Clk), .Rst(Rst), .en(DONE), .d({P,OF,UF,NANF,INFF,DNF,ZF}), .q({ResP, ResOF, ResUF, ResNANF, ResINFF, ResDNF, ResZF})
 	);
 
 rsreg FPM_rsreg_inst(
-		.clk(clk), .set(DONE), .rst(StartCmb), .q(ResDone)
+		.Clk(Clk), .set(DONE), .Rst(StartCmb), .q(ResDone)
 );
 
 endmodule
 
 module rsreg
 (
-	input clk, 
+	input Clk, 
 	input set, 
-	input rst, 
+	input Rst, 
 	output reg q
 );
-    always @ (posedge clk, posedge rst)
+    always @ (posedge Clk, posedge Rst)
     begin
-        if(rst) q <=0;
+        if(Rst) q <=0;
         else if(set) q <= 1;
         else q <= q;
     end

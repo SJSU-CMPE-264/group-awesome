@@ -112,23 +112,23 @@ endmodule
 
 // Parameterized Register
 module flopr #(parameter WIDTH = 8) (
-    input                    clk, reset,
+    input                    Clk, reset,
     input        [WIDTH-1:0]    d,
     output reg    [WIDTH-1:0]    q);
 
-    always @(posedge clk, posedge reset)
+    always @(posedge Clk, posedge reset)
         if (reset) q <= 0;
         else       q <= d;
 endmodule
 
 // commented out since flopenr is not used
 //module flopenr #(parameter WIDTH = 8) (
-//    input                    clk, reset,
+//    input                    Clk, reset,
 //    input                    en,
 //    input        [WIDTH-1:0]    d,
 //    output reg    [WIDTH-1:0]    q);
 //
-//    always @(posedge clk, posedge reset)
+//    always @(posedge Clk, posedge reset)
 //        if      (reset) q <= 0;
 //        else if (en)    q <= d;
 //endmodule
@@ -154,7 +154,7 @@ module mux4 #(parameter WIDTH = 8) (
 // register file with one write port and three read ports
 // the 3rd read port is for prototyping dianosis
 module regfile(    
-    input            clk,
+    input            Clk,
     input            we3,
     input     [ 4:0]    ra1, ra2, wa3,
     input    [31:0]     wd3,
@@ -170,8 +170,8 @@ module regfile(
         for (n=0; n<32; n=n+1)
             rf[n] = 32'h00;
             
-    //write first order, include logic to handle special case of $0
-    always @(posedge clk)
+    //write fiRst order, include logic to handle special case of $0
+    always @(posedge Clk)
         if (we3)
             if (~ wa3[4])
                 rf[{0,wa3[3:0]}] <= wd3;
@@ -197,9 +197,9 @@ assign {hi,lo} = in1* in2;
 
 endmodule
 
-module spreg(input clk, load, [31:0] in, output reg [31:0] out);
+module spreg(input Clk, load, [31:0] in, output reg [31:0] out);
 
-always @(posedge clk)
+always @(posedge Clk)
     begin
         if(load) out = in;
         else out = out;
@@ -226,7 +226,7 @@ endmodule
 
 // Data Path (excluding the instruction and data memories)
 module datapath(
-    input            clk, reset, memtoreg, pcsrc, alusrc, regdst, regwrite, jump,
+    input            Clk, reset, memtoreg, pcsrc, alusrc, regdst, regwrite, jump,
                    jalsel, select_result, hi_lo, hi_lo_load, alu_jump, //new additions
     input    [2:0]    alucontrol,
     output            zero,
@@ -243,7 +243,7 @@ module datapath(
     wire [4:0] rs_rt; //jalregmux - new addition
 
     // next PC logic
-    flopr #(32) pcreg(clk, reset, pcnext, pc);
+    flopr #(32) pcreg(Clk, reset, pcnext, pc);
     adder       pcadd1(pc, 32'b100, pcplus4);
     sl2         immsh(signimm, signimmsh);
     adder       pcadd2(pcplus4, signimmsh, pcbranch);
@@ -251,7 +251,7 @@ module datapath(
     mux4 #(32)  pcmux(pcnextbr, {pcplus4[31:28], instr[25:0], 2'b00}, srca, 31'b0, {alu_jump,jump}, pcnext);
 
     // register file logic
-    regfile        rf(clk, regwrite, instr[25:21], instr[20:16], writereg, result, srca, writedata, dispSel, dispDat);
+    regfile        rf(Clk, regwrite, instr[25:21], instr[20:16], writereg, result, srca, writedata, dispSel, dispDat);
     mux2 #(5)    wrmux(instr[20:16], instr[15:11], regdst, rs_rt);
     mux2 #(5)   jalregmux(rs_rt, 5'b11111, jalsel, writereg);
     mux2 #(32)    resmux(aluout, readdata, memtoreg, resultp1);
@@ -263,8 +263,8 @@ module datapath(
     
     //multiply
     multiply    multu(srca, srcb, hireg, loreg);
-    spreg       hi_reg(clk, hi_lo_load, hireg, hi_out);
-    spreg       lo_reg(clk, hi_lo_load, loreg, lo_out);
+    spreg       hi_reg(Clk, hi_lo_load, hireg, hi_out);
+    spreg       lo_reg(Clk, hi_lo_load, loreg, lo_out);
     mux2 #(32)  hilomux(hi_out, lo_out, hi_lo, hilo_out); //connects into new mux that takes in resmux and hilomux
     
     mux2 #(32)  selmux(resultp1, hilo_out, select_result, select_out);
@@ -273,7 +273,7 @@ endmodule
 
 // The MIPS (excluding the instruction and data memories)
 module mips(
-    input            clk, reset,
+    input            Clk, reset,
     output    [31:0]    pc,
     input     [31:0]    instr,
     output            memwrite,
@@ -292,7 +292,7 @@ module mips(
                 alusrc, regdst, regwrite, jump,
                 jalsel, select_result, hi_lo, hi_lo_load, alu_jump,
                 alucontrol);
-    datapath dp(clk, reset, memtoreg, pcsrc,
+    datapath dp(Clk, reset, memtoreg, pcsrc,
                 alusrc, regdst, regwrite, jump,
                 jalsel, select_result, hi_lo, hi_lo_load, alu_jump,
                 alucontrol, zero, pc, instr, aluout,
@@ -316,7 +316,7 @@ endmodule
 
 // Data Memory
 module dmem (
-    input            clk,
+    input            Clk,
     input            we,
     input    [31:0]    addr,
     input    [31:0]    dIn,
@@ -332,7 +332,7 @@ module dmem (
         
     assign dOut = ram[addr[31:2]];
                 
-    always @(posedge clk)
+    always @(posedge Clk)
         if (we)
             ram[addr[31:2]] = dIn;
 endmodule

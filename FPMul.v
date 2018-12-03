@@ -1,19 +1,19 @@
 `timescale 1ns / 1ps
 
 // -----------------------------------------------------
-//                   FPMul Top Level
+//                   FPMUL Top Level
 // -----------------------------------------------------
-module FPMul (
-    input  wire        clk,
-    input  wire        rst,
+module FPMUL (
+    input  wire        Clk,
+    input  wire        Rst,
     input  wire        Start,
     input  wire [31:0] A,
     input  wire [31:0] B,
     output wire        Done,
     output wire [31:0] P,
-    output wire        OF, UF, NanF, InfF, DNF, ZF
+    output wire        OF, UF, NaNF, InfF, DNF, ZF
 );
-    wire       p_rst;
+    wire       p_Rst;
     wire [4:0] buf_en;
     wire [8:0] r_en;
     wire [1:0] r2_src;
@@ -24,11 +24,11 @@ module FPMul (
     wire       nan, inf, zero;
     wire       mp23, round, mph_h, underflow, overflow;
 
-    FPMul_DP dp ( .clk(clk),
-                  .rst(rst),
+    FPMUL_DP dp ( .Clk(Clk),
+                  .Rst(Rst),
                   .A(A),
                   .B(B),
-                  .p_rst(p_rst),
+                  .p_Rst(p_Rst),
                   .buf_en(buf_en),
                   .r_en(r_en),
                   .r2_src(r2_src),
@@ -39,17 +39,17 @@ module FPMul (
                   .nan(nan), .inf(inf), .zero(zero),
                   .mp23(mp23), .round(round), .mph_h(mph_h), .underflow(underflow), .overflow(overflow),
                   .P(P),
-                  .OF(OF), .UF(UF), .NanF(NanF), .InfF(InfF), .DNF(DNF), .ZF(ZF) );
+                  .OF(OF), .UF(UF), .NaNF(NaNF), .InfF(InfF), .DNF(DNF), .ZF(ZF) );
 
-    FPMul_CU cu ( .clk(clk),
-                  .rst(rst),
+    FPMUL_CU cu ( .Clk(Clk),
+                  .Rst(Rst),
                   .start(Start),
                   .nan(nan), .inf(inf), .zero(zero),
                   .mp23(mp23), 
                   .mph_h(mph_h), .round(round), 
                   .underflow(underflow), .overflow(overflow),
                   .done(Done),
-                  .p_rst(p_rst),
+                  .p_Rst(p_Rst),
                   .buf_en(buf_en),
                   .r_en(r_en),
                   .r2_src(r2_src),
@@ -60,14 +60,14 @@ module FPMul (
 endmodule
 
 // -----------------------------------------------------
-//                   FPMul Data Path
+//                   FPMUL Data Path
 // -----------------------------------------------------
-module FPMul_DP (
-    input  wire        clk,
-    input  wire        rst,
+module FPMUL_DP (
+    input  wire        Clk,
+    input  wire        Rst,
     input  wire [31:0] A,
     input  wire [31:0] B,
-    input  wire        p_rst,
+    input  wire        p_Rst,
     input  wire [ 4:0] buf_en,
     input  wire [ 8:0] r_en,
     input  wire [ 1:0] r2_src,
@@ -78,7 +78,7 @@ module FPMul_DP (
     output wire        nan, inf, zero,
     output wire        mp23, round, mph_h, underflow, overflow,
     output wire [31:0] P,
-    output wire        OF, UF, NanF, InfF, DNF, ZF
+    output wire        OF, UF, NaNF, InfF, DNF, ZF
 );
     wire [23:0] bus1;
     wire [23:0] bus2;
@@ -139,27 +139,27 @@ module FPMul_DP (
                              .in({1'b0, B[22:0]}),
                              .out(bus2) );
 
-    DRegister #( 1) R1 ( .clk(clk), .rst(rst),
+    DRegister #( 1) R1 ( .Clk(Clk), .Rst(Rst),
                          .en(r_en[0]),
                          .d(R1_in),
                          .q(R1_out) );
-    DRegister #(10) R2 ( .clk(clk), .rst(rst),
+    DRegister #(10) R2 ( .Clk(Clk), .Rst(Rst),
                          .en(r_en[1]),
                          .d(R2_in),
                          .q(R2_out) );
-    DRegister #(24) R3 ( .clk(clk), .rst(rst),
+    DRegister #(24) R3 ( .Clk(Clk), .Rst(Rst),
                          .en(r_en[2]),
                          .d(R3_in),
                          .q(R3_out) );
-    DRegister #( 1) R4 ( .clk(clk), .rst(rst),
+    DRegister #( 1) R4 ( .Clk(Clk), .Rst(Rst),
                          .en(r_en[3]),
                          .d(B[31]),
                          .q(R4_out) );
-    DRegister #( 8) R5 ( .clk(clk), .rst(rst),
+    DRegister #( 8) R5 ( .Clk(Clk), .Rst(Rst),
                          .en(r_en[4]),
                          .d(B[30:23]),
                          .q(R5_out) );
-    DRegister #(24) R6 ( .clk(clk), .rst(rst),
+    DRegister #(24) R6 ( .Clk(Clk), .Rst(Rst),
                          .en(r_en[5]),
                          .d(bus2),
                          .q(R6_out) );
@@ -182,7 +182,7 @@ module FPMul_DP (
                                .y(f1_out) );
     
     // Auxillary Flag Generation
-    AuxFlagGen AUX ( .clk(clk), .rst(rst),
+    AuxFlagGen AUX ( .Clk(Clk), .Rst(Rst),
                      .EAP(R2_out),
                      .EB(R5_out[7:0]),
                      .MAP(R3_out[22:0]),
@@ -190,7 +190,7 @@ module FPMul_DP (
                      .flags(flags) );
 
     // Pipelined Multiplier
-    Mul            mul               ( .clk(clk), .rst(rst), 
+    Mul            mul               ( .Clk(Clk), .Rst(Rst), 
                                        .a({ 8'b0, R3_out }), 
                                        .b({ 8'b0, R6_out }), 
                                        .y(mul_out) );
@@ -231,50 +231,50 @@ module FPMul_DP (
                                         .in(mux6_out), 
                                         .out(bus2) );
 
-    DRegister #(32) P_register      ( .clk(clk), .rst(p_rst),
+    DRegister #(32) P_register      ( .Clk(Clk), .Rst(p_Rst),
                                       .en(r_en[8]),
                                       .d({ R1_out, R2_out[7:0], R3_out[22:0] }),
                                       .q(P) );
-    DRegister #( 1) P_ZF_register   ( .clk(clk), .rst(p_rst),
+    DRegister #( 1) P_ZF_register   ( .Clk(Clk), .Rst(p_Rst),
                                       .en(r_en[8]),
                                       .d(flags[11]),
                                       .q(ZF) );
-    DRegister #( 1) P_DNF_register  ( .clk(clk), .rst(p_rst),
+    DRegister #( 1) P_DNF_register  ( .Clk(Clk), .Rst(p_Rst),
                                       .en(r_en[8]),
                                       .d(flags[10]),
                                       .q(DNF) );
-    DRegister #( 1) P_InfF_register ( .clk(clk), .rst(p_rst),
+    DRegister #( 1) P_InfF_register ( .Clk(Clk), .Rst(p_Rst),
                                       .en(r_en[8]),
                                       .d(flags[9]),
                                       .q(InfF) );
-    DRegister #( 1) P_NanF_register ( .clk(clk), .rst(p_rst),
+    DRegister #( 1) P_NaNF_register ( .Clk(Clk), .Rst(p_Rst),
                                       .en(r_en[8]),
                                       .d(flags[8]),
-                                      .q(NanF) );    
-    DRegister #( 1) P_UF_register   ( .clk(clk), .rst(p_rst),
+                                      .q(NaNF) );    
+    DRegister #( 1) P_UF_register   ( .Clk(Clk), .Rst(p_Rst),
                                       .en(r_en[7]),
                                       .d(flags[5]),
                                       .q(UF) );
-    DRegister #( 1) P_OF_register   ( .clk(clk), .rst(p_rst),
+    DRegister #( 1) P_OF_register   ( .Clk(Clk), .Rst(p_Rst),
                                       .en(r_en[6]),
                                       .d(flags[4]),
                                       .q(OF) );
 
-endmodule // FPMul_DP
+endmodule // FPMUL_DP
 
 // -----------------------------------------------------
-//                 FPMul Control Unit
+//                 FPMUL Control Unit
 // -----------------------------------------------------
-module FPMul_CU (
-    input  wire       clk,
-    input  wire       rst,
+module FPMUL_CU (
+    input  wire       Clk,
+    input  wire       Rst,
     input  wire       start,
     input  wire       nan, inf, zero,
     input  wire       mp23, 
     input  wire       mph_h, round, 
     input  wire       underflow, overflow,
     output wire       done,
-    output wire       p_rst,
+    output wire       p_Rst,
     output wire [4:0] buf_en,
     output wire [8:0] r_en,
     output wire [1:0] r2_src,
@@ -316,10 +316,10 @@ parameter CTRL_RESET = 23'b0_1_00000_0_00_000000_00_00_0_0_0,
     reg [ 3:0] ns;   // next state
     reg [22:0] ctrl; // control signal bus
 
-    assign { done, p_rst, buf_en, r_en, r2_src, r3_src, shift_sel, f1_srcB, f1_ctrl } = ctrl;
+    assign { done, p_Rst, buf_en, r_en, r2_src, r3_src, shift_sel, f1_srcB, f1_ctrl } = ctrl;
 
-    always @(posedge clk, posedge rst) begin
-        if (rst) cs <= S0;
+    always @(posedge Clk, posedge Rst) begin
+        if (Rst) cs <= S0;
         else     cs <= ns;
     end
 
@@ -358,4 +358,4 @@ parameter CTRL_RESET = 23'b0_1_00000_0_00_000000_00_00_0_0_0,
             S9: begin ctrl = CTRL_DONE;  ns = S0; end
         endcase
     end
-endmodule // FPMul_CU
+endmodule // FPMUL_CU
