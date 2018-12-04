@@ -47,7 +47,7 @@ module Adder #(parameter WIDTH = 32) (
     output wire [WIDTH-1:0] y
 );
     assign y = a + b;
-endmodule // Adder 
+endmodule // Adder
 
 module ALU #(parameter WIDTH = 32) (
     input  wire             ctrl,
@@ -55,7 +55,6 @@ module ALU #(parameter WIDTH = 32) (
     input  wire [WIDTH-1:0] b,
     output reg  [WIDTH-1:0] y
 );
-    // initial assign y = {(WIDTH){1'b0}};
     always @(ctrl, a, b) begin
         case (ctrl)
             1'b0: y = a + b; // add
