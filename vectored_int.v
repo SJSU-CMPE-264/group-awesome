@@ -43,10 +43,6 @@ module controller_logic
     input wire ctrl_edge,
     output reg [3:0] out
 );
-    // initial
-    // begin
-    //   out = 4'b0000;
-    // end
 
     always @(posedge ctrl_edge)
     begin
