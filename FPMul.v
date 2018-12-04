@@ -57,6 +57,10 @@ module FPMUL (
                   .shift_sel(shift_sel),
                   .f1_srcB(f1_srcB),
                   .f1_ctrl(f1_ctrl) );
+    initial begin
+        $dumpfile("FPMUL.vcd");
+        $dumpvars(0,FPMUL);  
+    end
 endmodule
 
 // -----------------------------------------------------
