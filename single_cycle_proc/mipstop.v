@@ -45,7 +45,7 @@ module mips_top(
     // debounce db (Clk_5KHz, pb, Clk_db);
       
     // Instantiate processor and memories    
-    mips     mips       (clk, reset, pc, instr, memwrite, 
+    mips     mips       (Clk, reset, pc, instr, memwrite, 
                         dataadr, writedata, readdata, 
                         //switches[4:0], dispDat, 
                         faccel_done, FPM_done, 1'b0, 1'b0);
@@ -53,7 +53,7 @@ module mips_top(
     //SoC
     SoC     soc ( 
                 .addr(dataadr), .write_data(writedata), .gpi1(gpi1),
-                .WE(memwrite), .reset(reset), .clk(clk), .data_out(readdata),
+                .WE(memwrite), .reset(reset), .clk(Clk), .data_out(readdata),
                 .faccel_done(faccel_done), .FPM_done(FPM_done) 
                 );
     

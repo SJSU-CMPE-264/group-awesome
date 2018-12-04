@@ -203,7 +203,7 @@ module mux4 #(parameter WIDTH = 8) (
 // register file with one write port and three read ports
 // the 3rd read port is for prototyping dianosis
 module regfile(    
-    input			clk,
+    input			Clk,
     input			we3,
     input	[4:0]	ra1, ra2, wa3,
     input	[31:0]	wd3,
@@ -423,7 +423,7 @@ endmodule
 
 // Data Memory
 module dmem (
-    input			clk,
+    input			Clk,
     input			we,
     input	[31:0]	addr,
     input	[31:0]	dIn,
