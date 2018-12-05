@@ -435,11 +435,11 @@ module dmem (
     //initialize ram to all FFs
     initial
         for (n=0; n<64; n=n+1)
-            ram[n] = 8'hFF;
+            ram[n] = 32'h0000_0000;
         
-    assign dOut = ram[addr[31:2]];
+    assign dOut = ram[addr[7:2]];
                 
     always @(posedge Clk)
         if (we)
-            ram[addr[31:2]] = dIn;
+            ram[addr[7:2]] = dIn;
 endmodule

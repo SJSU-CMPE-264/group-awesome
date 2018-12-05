@@ -17,10 +17,10 @@ module decoder
         endcase
         
         casex (a)
-            32'h0000_000x: begin rdsel = 1; end //memory
-            32'h0000_080x: begin rdsel = 2; end //factorial
-            32'h0000_090x: begin rdsel = 3; end //gpio
-            33'h0000_0A0x: begin rdsel = 0; end //FPMul    
+            32'h0000_00xx: begin rdsel = 2'b01; end //memory
+            32'h0000_080x: begin rdsel = 2'b10; end //factorial
+            32'h0000_090x: begin rdsel = 2'b11; end //gpio
+            33'h0000_0A0x: begin rdsel = 2'b00; end //FPMul    
             default: begin rdsel = 0; end
         endcase
     end
