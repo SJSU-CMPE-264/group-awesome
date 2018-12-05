@@ -45,8 +45,8 @@ module FPMUL (
                   .Rst(Rst),
                   .start(Start),
                   .nan(nan), .inf(inf), .zero(zero),
-                  .mp23(mp23), 
-                  .mph_h(mph_h), .round(round), 
+                  .mp23(mp23),
+                  .mph_h(mph_h), .round(round),
                   .underflow(underflow), .overflow(overflow),
                   .done(Done),
                   .p_Rst(p_Rst),
@@ -59,7 +59,7 @@ module FPMUL (
                   .f1_ctrl(f1_ctrl) );
     initial begin
         $dumpfile("FPMUL.vcd");
-        $dumpvars(0,FPMUL);  
+        $dumpvars(0,FPMUL);
     end
 endmodule
 
@@ -87,7 +87,7 @@ module FPMUL_DP (
     wire [23:0] bus1;
     wire [23:0] bus2;
     wire [11:0] flags;
-    
+
     wire        R1_in;
     wire [ 9:0] R2_in;
     wire [23:0] R3_in;
@@ -97,7 +97,7 @@ module FPMUL_DP (
     wire        R4_out;
     wire [ 7:0] R5_out;
     wire [23:0] R6_out;
-    
+
     wire [ 9:0] eb_src_out;
     wire [ 9:0] f1_srcB_out;
     wire [ 9:0] f1_out;
@@ -115,28 +115,28 @@ module FPMUL_DP (
     assign inf       = flags[2];
     assign zero      = flags[1];
     assign dnf       = flags[0]; // TODO: remove me
-    
-    Mux #(2,  1) R1_src_mux ( .sel(buf_en[0]), 
+
+    Mux #(2,  1) R1_src_mux ( .sel(buf_en[0]),
                               .in({
                                   A[31],          // 1
                                   R1_out ^ R4_out // 0
-                               }), 
+                               }),
                               .out(R1_in) );
-    Mux #(4, 10) R2_src_mux ( .sel(r2_src), 
-                              .in({ 
+    Mux #(4, 10) R2_src_mux ( .sel(r2_src),
+                              .in({
                                   {10{1'b1}},      // 11
                                   {10{1'b0}},      // 10
                                   f1_out,          // 01
                                   {2'b0, A[30:23]} // 00
-                               }), 
+                               }),
                               .out(R2_in) );
-    Mux #(4, 24) R3_src_mux ( .sel(r3_src), 
-                              .in({ 
+    Mux #(4, 24) R3_src_mux ( .sel(r3_src),
+                              .in({
                                   {24{1'b1}},     // 11
                                   {24{1'b0}},     // 10
                                   bus1,           // 01
                                   {1'b0, A[22:0]} // 00
-                               }), 
+                               }),
                               .out(R3_in) );
 
     TriState #(24) buffer1 ( .oe(buf_en[0]),
@@ -181,10 +181,10 @@ module FPMUL_DP (
                                }),
                                .out(f1_srcB_out) );
     ALU #(10)     F1         ( .ctrl(f1_ctrl),
-                               .a(R2_out), 
-                               .b(f1_srcB_out), 
+                               .a(R2_out),
+                               .b(f1_srcB_out),
                                .y(f1_out) );
-    
+
     // Auxillary Flag Generation
     AuxFlagGen AUX ( .Clk(Clk), .Rst(Rst),
                      .EAP(R2_out),
@@ -194,24 +194,24 @@ module FPMUL_DP (
                      .flags(flags) );
 
     // Pipelined Multiplier
-    Mul            mul               ( .Clk(Clk), .Rst(Rst), 
-                                       .a({ 8'b0, R3_out }), 
-                                       .b({ 8'b0, R6_out }), 
+    Mul            mul               ( .Clk(Clk), .Rst(Rst),
+                                       .a({ 8'b0, R3_out }),
+                                       .b({ 8'b0, R6_out }),
                                        .y(mul_out) );
-    TriState #(24) mul_out_hi_buffer ( .oe(buf_en[4]), 
-                                       .in(mul_out[47:24]), 
+    TriState #(24) mul_out_hi_buffer ( .oe(buf_en[4]),
+                                       .in(mul_out[47:24]),
                                        .out(bus1) );
-    TriState #(24) mul_out_lo_buffer ( .oe(buf_en[4]), 
-                                       .in(mul_out[23:0]), 
+    TriState #(24) mul_out_lo_buffer ( .oe(buf_en[4]),
+                                       .in(mul_out[23:0]),
                                        .out(bus2) );
 
-    Adder    #(24) adder               ( .a(R3_out), 
-                                         .b(24'b1),
+    Adder    #(24) adder               ( .a(R3_out),
+                                         .b({ 24'b0, 1'b1 }),
                                          .y(adder_out) );
-    TriState #(24) adder_out_buffer   ( .oe(buf_en[3]), 
-                                        .in(adder_out), 
+    TriState #(24) adder_out_buffer   ( .oe(buf_en[3]),
+                                        .in(adder_out),
                                         .out(bus1) );
-    TriState #(24) round_buffer       ( .oe(buf_en[2]), 
+    TriState #(24) round_buffer       ( .oe(buf_en[2]),
                                         .in(24'h800_000), // 0x800000
                                         .out(bus1) );
 
@@ -228,11 +228,11 @@ module FPMUL_DP (
                                             R6_out                  // 0
                                         }),
                                         .out(mux6_out) );
-    TriState #(24)    mux5_out_buffer ( .oe(buf_en[1]), 
-                                        .in(mux5_out), 
+    TriState #(24)    mux5_out_buffer ( .oe(buf_en[1]),
+                                        .in(mux5_out),
                                         .out(bus1) );
-    TriState #(24)    mux6_out_buffer ( .oe(buf_en[1]), 
-                                        .in(mux6_out), 
+    TriState #(24)    mux6_out_buffer ( .oe(buf_en[1]),
+                                        .in(mux6_out),
                                         .out(bus2) );
 
     DRegister #(32) P_register      ( .Clk(Clk), .Rst(p_Rst),
@@ -254,7 +254,7 @@ module FPMUL_DP (
     DRegister #( 1) P_NaNF_register ( .Clk(Clk), .Rst(p_Rst),
                                       .en(r_en[8]),
                                       .d(flags[8]),
-                                      .q(NaNF) );    
+                                      .q(NaNF) );
     DRegister #( 1) P_UF_register   ( .Clk(Clk), .Rst(p_Rst),
                                       .en(r_en[7]),
                                       .d(flags[5]),
@@ -274,8 +274,8 @@ module FPMUL_CU (
     input  wire       Rst,
     input  wire       start,
     input  wire       nan, inf, zero,
-    input  wire       mp23, 
-    input  wire       mph_h, round, 
+    input  wire       mp23,
+    input  wire       mph_h, round,
     input  wire       underflow, overflow,
     output wire       done,
     output wire       p_Rst,
@@ -311,8 +311,8 @@ parameter CTRL_RESET = 23'b0_1_00000_0_00_000000_00_00_0_0_0,
           CTRL_NORM  = 23'b0_0_00000_0_00_000010_01_00_0_1_0,
           CTRL_ROUND = 23'b0_0_01000_0_00_000100_00_01_0_0_0,
           CTRL_MPH_H = 23'b0_0_00100_0_00_000110_01_01_0_1_0,
-          CTRL_OF    = 23'b0_0_00000_0_01_000110_11_01_0_0_0,
-          CTRL_UF    = 23'b0_0_00000_0_10_000110_01_01_0_0_0,
+          CTRL_OF    = 23'b0_0_00000_0_01_000110_11_10_0_0_0,
+          CTRL_UF    = 23'b0_0_00000_0_10_000110_10_10_0_0_0,
           CTRL_LOADP = 23'b0_0_00000_1_00_000000_00_00_0_0_0,
           CTRL_DONE  = 23'b1_0_00000_0_00_000000_00_00_0_0_0;
 
@@ -330,7 +330,7 @@ parameter CTRL_RESET = 23'b0_1_00000_0_00_000000_00_00_0_0_0,
     always @(*) begin
         case (cs)
             S0: begin ctrl = CTRL_RESET; ns = S1; end
-            S1: begin 
+            S1: begin
                 if (start) begin ctrl = CTRL_LOAD; ns = S2; end
                 else       begin ctrl = CTRL_WAIT; ns = S1; end
             end

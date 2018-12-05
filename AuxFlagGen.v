@@ -76,19 +76,19 @@ module AuxFlagGen(
     assign B_INFF  = EB_HF  &  MBP_ZF;
     assign B_NANF  = EB_HF  & ~MBP_ZF;
 
-    DRegister #(1) AB_NAN_reg  ( .Clk(Clk), .Rst(Rst), .en(1'b1), 
-                                 .d( A_NANF | B_NANF | (B_ZF & A_INFF) | (A_ZF & B_INFF) ), 
+    DRegister #(1) AB_NAN_reg  ( .Clk(Clk), .Rst(Rst), .en(1'b1),
+                                 .d( A_NANF | B_NANF | (B_ZF & A_INFF) | (A_ZF & B_INFF) ),
                                  .q(AB_NAN) );
     DRegister #(1) AB_INF_reg  ( .Clk(Clk), .Rst(Rst), .en(1'b1),
-                                 .d( (A_INFF & ~(B_NANF | B_ZF)) | (B_INFF & ~(A_NANF | A_ZF)) ), 
+                                 .d( (A_INFF & ~(B_NANF | B_ZF)) | (B_INFF & ~(A_NANF | A_ZF)) ),
                                  .q(AB_INF) );
     DRegister #(1) AB_ZERO_reg ( .Clk(Clk), .Rst(Rst), .en(1'b1),
-                                 .d( (A_ZF & (~B_NANF | B_INFF)) | (B_ZF & (~A_NANF | AP_INFF)) ), 
+                                 .d( (A_ZF & (~B_NANF | B_INFF)) | (B_ZF & (~A_NANF | AP_INFF)) ),
                                  .q(AB_ZERO) );
     DRegister #(1) AB_DNF_reg  ( .Clk(Clk), .Rst(Rst), .en(1'b1),
-                                 .d( A_DNF | B_DNF ), 
+                                 .d( A_DNF | B_DNF ),
                                  .q(AB_DNF) );
-                                 
+
     assign P_ZF   = EAP_ZF_reg.d &  MAP_ZF_reg.d;
     assign P_DNF  = EAP_ZF_reg.d & ~MAP_ZF_reg.d;
     assign P_INFF = EAP_HF_reg.d &  MAP_ZF_reg.d;
