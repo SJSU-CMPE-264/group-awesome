@@ -135,12 +135,12 @@ module FPMUL_DP (
                                   {24{1'b1}},     // 11
                                   {24{1'b0}},     // 10
                                   bus1,           // 01
-                                  {1'b0, A[22:0]} // 00
+                                  {1'b1, A[22:0]} // 00
                                }),
                               .out(R3_in) );
 
     TriState #(24) buffer1 ( .oe(buf_en[0]),
-                             .in({1'b0, B[22:0]}),
+                             .in({1'b1, B[22:0]}),
                              .out(bus2) );
 
     DRegister #( 1) R1 ( .Clk(Clk), .Rst(Rst),
@@ -176,8 +176,8 @@ module FPMUL_DP (
                                .out(eb_src_out) );
     Mux #(2, 10) f1_srcB_mux ( .sel(f1_srcB),
                                .in({
-                                    {10{1'b1}},  // 1
-                                    eb_src_out   // 0
+                                    {10'b1},   // 1
+                                    eb_src_out // 0
                                }),
                                .out(f1_srcB_out) );
     ALU #(10)     F1         ( .ctrl(f1_ctrl),
