@@ -291,13 +291,14 @@ module datapath(
     //output	[31:0]	dispDat,
     input			done1, done2, done3, done4, // new additions - Nick F
     // input	[31:0]	int_addr, // new additions - Nick F
-    output			status_bit); // new additions - Nick F
+    output			status_bit,// new additions - Nick F
+    output  [31:0]  epc); 
 
     wire	[4:0]	writereg;
     wire	[31:0]	pcnext, pcnext_out, pcnextbr, pcplus4, pcbranch, signimm, signimmsh, srca, srcb, result;
     wire	[31:0]	hireg, loreg, hi_out, lo_out, hilo_out, select_out, resultp1; //new addition
     wire	[4:0]	rs_rt; //jalregmux - new addition
-    wire	[31:0]	epcout; //epc_reg -  new additions - Nick F
+    // wire	[31:0]	epcout; //epc_reg -  new additions - Nick F
     wire    [31:0]  int_addr; //int_addr - new addition - Nick F
 
     wire	[ 4:0]	dispSel;
@@ -310,7 +311,7 @@ module datapath(
     sl2				immsh(signimm, signimmsh);
     adder			pcadd2(pcplus4, signimmsh, pcbranch);
     mux2	#(32)	pcbrmux(pcplus4, pcbranch, pcsrc, pcnextbr);
-    mux4	#(32)	pcmux(pcnextbr, {pcplus4[31:28], instr[25:0], 2'b00}, srca, epcout, {alu_jump,jump}, pcnext); //Add input 4 as epcout from EPC register - Nick F
+    mux4	#(32)	pcmux(pcnextbr, {pcplus4[31:28], instr[25:0], 2'b00}, srca, epc, {alu_jump,jump}, pcnext); //Add input 4 as epc from EPC register - Nick F
 
     // register file logic
     regfile			rf(clk, regwrite, instr[25:21], instr[20:16], writereg, result, srca, writedata);// dispSel, dispDat);
@@ -334,50 +335,47 @@ module datapath(
 
     // Vectored interrupt
     vectored_int	v_int(int_ack, done1, done2, done3, done4, int_addr);
-    flopenr	#(32)	epc_reg(clk, reset, epcwrite, pcnext, epcout);
+    flopenr	#(32)	epc_reg(clk, reset, epcwrite, pcnext, epc);
     // flopenr	#(1)	stat_reg(clk, int_ack, status_write, 1'b1, status_bit);
     sync_reg        stat_reg(.clk(clk), .rst(int_ack), .en(status_write), .d(1'b1), .q(status_bit));
 endmodule
 
 // The MIPS (excluding the instruction and data memories)
 module mips(
-    input               clk, reset,
-    output    [31:0]    pc,
+    input               Clk, Rst,
+    output    [31:0]    pc_current,
     input     [31:0]    instr,
-    output              memwrite,
-    output    [31:0]    aluout, writedata,
-    input     [31:0]    readdata,
-    //input     [ 4:0]    dispSel,
-    //output    [31:0]    dispDat,
-    // input               interrupt, //for vectored interrupt
-    input               done1, done2, done3, done4 //for vectored interrupt
+    output              we_dm,
+    output    [31:0]    addr_dm, wd_dm,
+    input     [31:0]    rd_dm,
+    input     [3:0]     ex_int, //for vectored interrupt
+    output    [31:0]    epc
     );
+    wire done1, done2, done3, done4;
+    assign {done1, done2, done3, done4} = ex_int;
 
-    // deleted wire "branch" - not used
     wire            memtoreg, pcsrc, zero, alusrc, regdst, regwrite, jump;
     wire            jalsel, select_result, hi_lo, hi_lo_load, alu_jump;    //new additions
     wire            status_bit, status_write, int_ack, epcwrite; //for vectored interrupt
     wire    [2:0]   alucontrol;
-    // wire    [31:0]  int_addr; //for vectored interrupt
 
     controller c(instr[31:26], instr[5:0], zero, 
                 status_bit, (done1 | done2 | done3 | done4), //for vectored interrupt
-                memtoreg, memwrite, pcsrc,
+                memtoreg, we_dm, pcsrc,
                 alusrc, regdst, regwrite, jump,
                 jalsel, select_result, hi_lo, hi_lo_load, alu_jump,
                 alucontrol,
                 status_write, int_ack, epcwrite); //for vectored interrupt
 
-    datapath dp(clk, reset, memtoreg, pcsrc,
+    datapath dp(Clk, Rst, memtoreg, pcsrc,
                 alusrc, regdst, regwrite, jump,
                 jalsel, select_result, hi_lo, hi_lo_load, alu_jump,
                 int_ack, epcwrite, status_write, //for vectored interrupt
-                alucontrol, zero, pc, instr, aluout,
-                writedata, readdata, 
-                //dispSel, dispDat,
+                alucontrol, zero, pc_current, instr, addr_dm,
+                wd_dm, rd_dm, 
                 done1, done2, done3, done4, //for vectored interrupt
-                // int_addr,
-                status_bit //for vectored interrupt
+                status_bit, //for vectored interrupt
+                epc
                 );
 endmodule
 

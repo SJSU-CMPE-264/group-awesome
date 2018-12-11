@@ -3,12 +3,9 @@
 
 module full_system_vectored_tb;
 
-    reg         clk, reset;// pb;
-    wire        memwrite;// wem, we1, we2, we3;
-//    wire [7:0]  LEDSEL, LEDOUT;
-//    reg  [7:0]  switches;
-    reg  [7:0]  gpi1;
-//    wire        sinkbit;
+    reg         clk, reset;
+    wire        memwrite;
+    wire [31:0] epc;
     
     integer counter = 0;
     integer max = 500;
@@ -22,21 +19,14 @@ module full_system_vectored_tb;
     end
     endtask
 
-    mips_top DUT(clk, reset,// pb,
-                 memwrite,// wem, we1, we2, we3,
-//                 LEDSEL, LEDOUT,
-//                 switches, 
-                 gpi1
-//                 sinkbit
+    mips_top DUT(clk, reset,
+                 memwrite, epc
                 );
                  
    
 
     initial
     begin
-//        switches = 0;
-        gpi1 = 0;
-//        pb = 1;
         reset = 0;
         #5;
         reset = 1;
